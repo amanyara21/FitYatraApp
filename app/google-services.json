@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "527448118101",
+    "firebase_url": "https://fit-yatra-d9561-default-rtdb.firebaseio.com",
+    "project_id": "fit-yatra-d9561",
+    "storage_bucket": "fit-yatra-d9561.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:527448118101:android:cef913a328fe493bf455dc",
+        "android_client_info": {
+          "package_name": "com.aman.fityatraapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "527448118101-irdva72me1gjai4qjjj07qvns01h8s2r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aman.fityatraapp",
+            "certificate_hash": "bb51b6962b25d4b58abc286d8110747f964fc480"
+          }
+        },
+        {
+          "client_id": "527448118101-hl7pokb20ru9g6rvem18v3jqknisg023.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu2T8q5_gEx499sYy2r_69sB10GMnyxRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "527448118101-hl7pokb20ru9g6rvem18v3jqknisg023.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

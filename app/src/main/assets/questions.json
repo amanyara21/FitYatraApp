@@ -1,0 +1,44 @@
+[
+  {
+    "question": "What is your age?",
+    "type": "number"
+  },
+  {
+    "question": "What is your height?",
+    "type": "height"
+  },
+  {
+    "question": "What is your weight?",
+    "type": "number"
+  },
+  {
+    "question": "What is your gender?",
+    "type": "dropdown",
+    "options": ["Male", "Female", "Other"]
+  },
+  {
+    "question": "What are your meal preferences?",
+    "type": "dropdown",
+    "options": ["Veg", "Non-Veg"]
+  },
+  {
+    "question": "How often do you exercise?",
+    "type": "dropdown",
+    "options": ["2-3 days a week", "4-5 days a week", "6-7 days a week"]
+  },
+  {
+    "question": "What are your fitness goals?",
+    "type": "dropdown",
+    "options": ["Lose weight/Fat", "Gain muscle", "Improve endurance", "Increase flexibility", "Maintain current fitness level"]
+  },
+  {
+    "question": "What is your sleep schedule?",
+    "type": "dropdown",
+    "options": ["3-4 hours", "5-6 hours", "7-8 hours", "9-10 hours"]
+  },
+  {
+    "question": "Do you have any medical problems related to diabetes?",
+    "type": "dropdown",
+    "options": ["No problem", "Type 1 Diabetes", "Type 2 Diabetes", "Gestational Diabetes", "Diabetic Retinopathy", "Diabetic Neuropathy", "Diabetic Nephropathy", "Cardiovascular issues"]
+  }
+]

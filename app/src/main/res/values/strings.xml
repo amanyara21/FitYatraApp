@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">FitYatra</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Goals</string>
+    <string name="title_exercise">Exercise</string>
+    <string name="web_client_id">527448118101-hl7pokb20ru9g6rvem18v3jqknisg023.apps.googleusercontent.com</string>
+    <string name="calorie_statistics">Calorie Statistics</string>
+    <string name="edit_personal_details">Edit Personal Details</string>
+    <string name="stop_exercise_timer">Stop Exercise Timer</string>
+    <string name="start_exercise_timer">Start Exercise Timer</string>
+    <string name="exercises">Exercises</string>
+    <string name="login">Login</string>
+    <string name="check_posture_problem">Check Posture Problem</string>
+    <string name="add_routine">Add Routine</string>
+    <string name="create_account">Create Account</string>
+    <string name="step_counts">Step Counts</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_posture_detection">Posture Detection\n</string>
+    <string name="title_planner">Diet Planner</string>
+    <string name="add_meal">Add Meal</string>
+    <string name="add_exercise">Add Exercise</string>
+    <string name="title_diet_chart">Diet Chart</string>
+</resources>
