@@ -94,16 +94,18 @@ class DietPlannerFragment : Fragment() {
             viewPager.currentItem = currentDayIndex - 1
             currentDayIndex -= 1
         } else {
-            viewPager.currentItem = adapter.itemCount - 1
-            currentDayIndex += 1
+            viewPager.currentItem = 0
+            currentDayIndex = 1
         }
     }
 
     private fun navigateToNextDay() {
         if (currentDayIndex < adapter.itemCount - 1) {
             viewPager.currentItem = currentDayIndex + 1
+            currentDayIndex += 1
         } else {
-            viewPager.currentItem = 0
+            viewPager.currentItem = adapter.itemCount-1
+            currentDayIndex = 7
         }
     }
 

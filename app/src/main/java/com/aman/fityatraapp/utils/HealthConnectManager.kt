@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -15,14 +18,34 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+
 
 class HealthConnectManager(private val context: Context) {
 
-    private val healthConnectClient = HealthConnectClient.getOrCreate(context)
+    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
     private val firebaseUtils = FirebaseUtils()
 
+    val PERMISSIONS = setOf(
+        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.getReadPermission(BloodGlucoseRecord::class),
+        HealthPermission.getReadPermission(WeightRecord::class),
+        HealthPermission.getReadPermission(StepsRecord::class)
+    )
+
+    private var permissionRequestLauncher: ActivityResultLauncher<Array<String>>? = null
+
+    fun registerPermissionRequestLauncher(launcher: ActivityResultLauncher<Array<String>>) {
+        permissionRequestLauncher = launcher
+    }
 
     suspend fun fetchHealthData() {
+        if (!hasAllPermissions(PERMISSIONS)) {
+            permissionRequestLauncher?.launch(PERMISSIONS.toTypedArray())
+            return
+        }
+
         val startTime = Instant.now().minus(7, ChronoUnit.DAYS)
         val endTime = Instant.now()
 
@@ -43,7 +66,7 @@ class HealthConnectManager(private val context: Context) {
             timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
         )
 
-        val results = try{
+        val results = try {
             withContext(Dispatchers.IO) {
                 val stepsResult = healthConnectClient.readRecords(stepCountQuery)
                 val weightResult = healthConnectClient.readRecords(weightQuery)
@@ -59,10 +82,16 @@ class HealthConnectManager(private val context: Context) {
 
         val stepCount = results.stepsResult.records.sumOf { it.count }
         val weight = results.weightResult.records.lastOrNull()?.weight?.inKilograms?.toFloat()
-        val glucoseLevel = results.glucoseResult.records.lastOrNull()?.levelMillimolesPerLiter
+        val glucoseLevel =
+            results.glucoseResult.records.lastOrNull()?.level?.inMilligramsPerDeciliter
         val caloriesBurned = results.caloriesBurnedResult.records.lastOrNull()?.energy?.inCalories
 
-        saveDataToFirebase(stepCount.toInt(), weight, glucoseLevel?.toFloat(), caloriesBurned?.toInt())
+        saveDataToFirebase(
+            stepCount.toInt(),
+            weight,
+            glucoseLevel?.toFloat(),
+            caloriesBurned?.toInt()
+        )
     }
 
     private fun saveDataToFirebase(
@@ -88,8 +117,14 @@ class HealthConnectManager(private val context: Context) {
         )
     }
 
+    suspend fun hasAllPermissions(permissions: Set<String>): Boolean {
+        return healthConnectClient.permissionController.getGrantedPermissions()
+            .containsAll(permissions)
+    }
 
-
+    fun requestPermissionsActivityContract(): ActivityResultContracts.RequestMultiplePermissions {
+        return ActivityResultContracts.RequestMultiplePermissions()
+    }
 }
 
 data class Data(

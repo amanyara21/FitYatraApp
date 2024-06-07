@@ -81,7 +81,7 @@ class ChatBotActivity : AppCompatActivity() {
     private lateinit var stepStatPrompt: TextView
 
 
-    val generativeModel = GenerativeModel(
+    private val generativeModel = GenerativeModel(
         modelName = "gemini-pro",
         apiKey = "AIzaSyAq70kaOeY0Dv8341W66B9ilvVW0wgOqVQ"
     )
@@ -188,13 +188,13 @@ class ChatBotActivity : AppCompatActivity() {
     }
 
     private fun showLoginPrompt() {
+        addChatMessage("Please login first.")
         val signInButton = Button(this).apply {
             id = R.id.sign_in_button
             text = "Sign In with Google"
             setOnClickListener { signIn() }
         }
         chatLayout.addView(signInButton)
-        addChatMessage("Please login first.")
     }
 
     private fun signIn() {
@@ -210,7 +210,6 @@ class ChatBotActivity : AppCompatActivity() {
             val signInAccountTask: Task<GoogleSignInAccount> =
                 GoogleSignIn.getSignedInAccountFromIntent(data)
 
-            // check condition
             if (signInAccountTask.isSuccessful) {
                 try {
                     val googleSignInAccount = signInAccountTask.getResult(ApiException::class.java)
@@ -403,7 +402,7 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun scrollToBottom() {
         scrollView.post {
-            scrollView.scrollTo(0,scrollView.bottom)
+            scrollView.scrollTo(0,scrollView.maxScrollAmount)
         }
     }
     private fun saveUserData() {
@@ -650,14 +649,14 @@ class ChatBotActivity : AppCompatActivity() {
                 userInput.contains("lunch", ignoreCase = true) -> showMealInput()
                 userInput.contains("dinner", ignoreCase = true) -> showMealInput()
                 userInput.contains("meal", ignoreCase = true) -> showMealInput()
-                userInput.contains("exercise", ignoreCase = true) && userInput.contains("add", ignoreCase = true) -> showExerciseInput()
+                (userInput.contains("exercise", ignoreCase = true) || userInput.contains("exercises", ignoreCase = true)) && userInput.contains("add", ignoreCase = true) || userInput.contains("exercise data", ignoreCase = true)-> showExerciseInput()
                 userInput.contains("do exercise", ignoreCase = true) || userInput.contains("go to exercise", ignoreCase = true) || userInput.contains("want", ignoreCase = true) -> navigateToExerciseFragment()
-                userInput.contains("weight", ignoreCase = true) && userInput.contains("add", ignoreCase = true) -> openWeightEditor()
+                userInput.contains("weight", ignoreCase = true) && (userInput.contains("add", ignoreCase = true) || userInput.contains("data", ignoreCase = true)) -> openWeightEditor()
                 userInput.contains("blood sugar", ignoreCase = true) -> openGlucoseEditor()
                 userInput.contains("diet plan", ignoreCase = true) -> navigateToDietPlanFragment()
                 userInput.contains("add data", ignoreCase = true) -> handleAddData()
                 userInput.contains("show calorie", ignoreCase = true) -> navigateToCalorie()
-                userInput.contains("show steps", ignoreCase = true) -> navigateToSteps()
+                userInput.contains("show step", ignoreCase = true) -> navigateToSteps()
                 userInput.contains("show weight", ignoreCase = true) -> navigateToWeight()
                 userInput.contains("main", ignoreCase = true) -> navigateToMainActivity()
                 userInput.contains("posture", ignoreCase = true) -> navigateToPostureActivity()

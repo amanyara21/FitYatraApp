@@ -5,7 +5,9 @@ import android.content.pm.PackageManager
 import android.health.connect.HealthPermissions
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.registerForActivityResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -35,22 +37,19 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var PERMISSIONS_REQUEST_CODE = 100
-
-    val PERMISSIONS =
-        setOf(
-            HealthPermission.createReadPermission(TotalCaloriesBurnedRecord::class),
-            HealthPermission.createReadPermission(BloodGlucoseRecord::class),
-            HealthPermission.createReadPermission(WeightRecord::class),
-            HealthPermission.createReadPermission(StepsRecord::class)
-        )
-
-
+    private lateinit var healthConnectManager: HealthConnectManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        healthConnectManager = HealthConnectManager(this)
+        healthConnectManager.registerPermissionRequestLauncher(requestPermissionLauncher)
+
+        lifecycleScope.launch {
+            healthConnectManager.fetchHealthData()
+        }
 
         val navView: BottomNavigationView = binding.navView
 
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        binding.fabChat.setOnClickListener{
+        binding.fabChat.setOnClickListener {
             val intent = Intent(this, ChatBotActivity::class.java)
             startActivity(intent)
         }
@@ -77,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.navigation_diet)
         } else if (intent.getBooleanExtra("EXERCISE_FRAGMENT", false)) {
             navController.navigate(R.id.navigation_notifications)
-        }else if (intent.getBooleanExtra("POSTURE_FRAGMENT", false)) {
+        } else if (intent.getBooleanExtra("POSTURE_FRAGMENT", false)) {
             navController.navigate(R.id.navigation_posture)
         }
 
@@ -88,21 +87,26 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.navigation_home)
                     true
                 }
+
                 R.id.navigation_dashboard -> {
                     // Navigate to the dashboard fragment
                     navController.navigate(R.id.navigation_dashboard)
                     true
                 }
+
                 R.id.navigation_notifications -> {
                     // Navigate to the notifications fragment
                     navController.navigate(R.id.navigation_notifications)
                     true
                 }
+
                 R.id.navigation_posture -> {
                     // Navigate to the notifications fragment
                     navController.navigate(R.id.navigation_posture)
                     true
-                }R.id.navigation_diet -> {
+                }
+
+                R.id.navigation_diet -> {
                     // Navigate to the notifications fragment
                     navController.navigate(R.id.navigation_diet)
                     true
@@ -112,51 +116,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-        if (HealthConnectClient.isAvailable(this)) {
-            checkPermissionsAndRun()
-        } else {
-            Toast.makeText(
-                this, "Health Connect is not available", Toast.LENGTH_SHORT
-            ).show()
+        val availability = HealthConnectClient.sdkStatus(this)
+        if (availability==1 || availability==2){
+            Toast.makeText(this, "Download Health connect App to integrate", Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(this, "Health connect App integrated", Toast.LENGTH_SHORT).show()
         }
 
-
     }
-    private fun checkPermissionsAndRun() {
-        val client = HealthConnectClient.getOrCreate(this)
-        val requestPermissionActivityContract = client
-            .permissionController
-            .createRequestPermissionActivityContract()
 
-        val requestPermissions = registerForActivityResult(
-            requestPermissionActivityContract
-        ) { granted ->
-            if (granted.containsAll(PERMISSIONS)) {
-                // Permissions successfully granted
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            if (permissions.all { it.value }) {
+                // Permissions granted
                 lifecycleScope.launch {
-                    onPermissionAvailable(client)
+                    healthConnectManager.fetchHealthData()
                 }
             } else {
-                Toast.makeText(
-                    this, "Permissions not granted", Toast.LENGTH_SHORT
-                ).show()
+                // Handle the case where permissions are not granted
+                Log.e("MainActivity", "Permissions not granted")
             }
         }
 
-        lifecycleScope.launch {
-            val granted = client.permissionController
-                .getGrantedPermissions(PERMISSIONS)
-            if (granted.containsAll(PERMISSIONS)) {
-                onPermissionAvailable(client)
-            } else {
-                requestPermissions.launch(PERMISSIONS)
-            }
-        }
-    }
 
-    private suspend fun onPermissionAvailable(client: HealthConnectClient) {
-    }
 
 }
 

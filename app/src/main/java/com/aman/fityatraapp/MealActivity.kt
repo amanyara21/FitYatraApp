@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -68,13 +69,24 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
             if (responseMeal.isSuccessful) {
                 val totalCalories = responseMeal.body()?.total_calories?.toInt() ?: 0
                 firebaseUtils.addOrUpdateHealthData(null, mealList, 0, totalCalories, 0,0.0f,0.0f, onSuccess = {}, onFailure = {})
+
+                showToast("Meal Added successfully")
+                mealList.clear()
+                mealList.add(MealAdd())
+                mealAddAdapter.notifyDataSetChanged()
             }
         }
     }
+
 
     override fun onDeleteClick(position: Int, type: String) {
         mealList.removeAt(position)
         mealAddAdapter.notifyItemRemoved(position)
     }
+
+    private fun showToast(s: String) {
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
+    }
+
 }
 
