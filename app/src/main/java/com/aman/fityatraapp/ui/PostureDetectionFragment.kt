@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -129,7 +130,7 @@ class PostureDetectionFragment : Fragment() {
             neckAngle > 180 -> "Forward head"
             lowerBackAngle > 200 -> "Lordosis"
             upperBackAngle < 160 -> "Kyphosis"
-            upperBackAngle > 200 -> "Flat Back"
+            upperBackAngle > 200 -> "Flatback"
             else -> "Healthy Posture"
         }
     }
@@ -179,6 +180,7 @@ class PostureDetectionFragment : Fragment() {
     }
 
     private fun getActivities(postureProblem: String) {
+        Log.d("posture", postureProblem)
         firebaseUtils.getActivitiesByCure(postureProblem) { activities ->
             activities.let {
                 adapter = ActivityAdapter(it)

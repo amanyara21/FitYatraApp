@@ -57,6 +57,7 @@ data class HealthData(
 
 data class Activities(
     val activity: String = "",
+    val description: String = "",
     val backgroundImage: String = "",
     val image: String = ""
 ) : Serializable

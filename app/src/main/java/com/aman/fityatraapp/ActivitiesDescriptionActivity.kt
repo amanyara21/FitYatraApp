@@ -32,7 +32,7 @@ class ActivitiesDescriptionActivity : AppCompatActivity() {
         Picasso.get().load(activity.image).into(activityImageView)
 
         textViewActivityName.text = activity.activity
-//        textViewActivityDescription.text = activity.description
+        textViewActivityDescription.text = activity.description
 
     }
 }

@@ -249,7 +249,7 @@ class FirebaseUtils {
     }
 
     fun getActivitiesByCure(cure: String,  callback: (List<Activities>) -> Unit) {
-        database.child(cure).addListenerForSingleValueEvent(object : ValueEventListener {
+        database.child("Activities").child(cure).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val activities = dataSnapshot.children.map { it.getValue(Activities::class.java)!! }
                 callback(activities)
@@ -262,18 +262,24 @@ class FirebaseUtils {
     }
 
 
-    suspend fun saveDietPlan(dietPlan: List<DietPlan>) {
+    fun saveDietPlan(dietPlan: List<DietPlan>) {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        val dietPlanRef = FirebaseDatabase.getInstance().reference.child("$uid/dietplan")
 
-        try {
-            dietPlanRef.setValue(dietPlan).await()
-            Log.d("FirebaseUtils", "Diet plan saved successfully")
-        } catch (e: Exception) {
-            Log.e("FirebaseUtils", "Error saving diet plan: ${e.message}")
-            throw e
+        if (dietPlan.isNotEmpty()) {
+            val firstDietPlan = dietPlan[0]
+
+            try {
+                database.child("$uid/dietplan").setValue(firstDietPlan)
+                Log.d("FirebaseUtils", "Diet plan saved successfully")
+            } catch (e: Exception) {
+                Log.e("FirebaseUtils", "Error saving diet plan: ${e.message}")
+                throw e
+            }
+        } else {
+            Log.e("FirebaseUtils", "Diet plan list is empty")
         }
     }
+
 
 
 

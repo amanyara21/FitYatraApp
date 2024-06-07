@@ -77,6 +77,9 @@
             android:name=".ExerciseDescriptionActivity"
             android:exported="false" />
         <activity
+            android:name=".ActivitiesDescriptionActivity"
+            android:exported="false" />
+        <activity
             android:name=".CameraActivity"
             android:exported="false" />
         <activity

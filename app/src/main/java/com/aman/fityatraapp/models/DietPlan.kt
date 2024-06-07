@@ -1,29 +1,32 @@
 package com.aman.fityatraapp.models
 
-data class Meal(
-    val Carbohydrate: Double = 0.0,
-    val Category: String = "",
-    val Energy: Int = 0,
-    val Foodname: String = "",
-    val Meal: String = "",
-    val Protein: Double = 0.0,
-    val Sugars: Double = 0.0,
-    val fat: Double = 0.0,
-    val DietID: Int = 0
+import com.google.gson.annotations.SerializedName
+
+
+data class DietPlan(
+    @SerializedName("Day 1") val day1: DayPlan = DayPlan(),
+    @SerializedName("Day 2") val day2: DayPlan = DayPlan(),
+    @SerializedName("Day 3") val day3: DayPlan = DayPlan(),
+    @SerializedName("Day 4") val day4: DayPlan = DayPlan(),
+    @SerializedName("Day 5") val day5: DayPlan = DayPlan(),
+    @SerializedName("Day 6") val day6: DayPlan = DayPlan(),
+    @SerializedName("Day 7") val day7: DayPlan = DayPlan()
 )
 
 data class DayPlan(
-    val Breakfast: Meal,
-    val Lunch: Meal,
-    val Dinner: Meal
+    val Breakfast: Meal = Meal(),
+    val Lunch: Meal = Meal(),
+    val Dinner: Meal = Meal()
 )
 
-data class DietPlan(
-    val day1: DayPlan,
-    val day2: DayPlan,
-    val day3: DayPlan,
-    val day4: DayPlan,
-    val day5: DayPlan,
-    val day6: DayPlan,
-    val day7: DayPlan
+data class Meal(
+    @SerializedName("Carbohydrate by difference(g)") val carbohydrateByDifference: Double = 0.0,
+    @SerializedName("Category") val category: String = "",
+    @SerializedName("Energy(kcal)") val energy: Double = 0.0,
+    @SerializedName("Food name") val foodName: String = "",
+    @SerializedName("Meal") val meal: String = "",
+    @SerializedName("Protein(g)") val protein: Double = 0.0,
+    @SerializedName("Sugars total including NLEA(g)") val sugarsTotalIncludingNLEA: Double = 0.0,
+    @SerializedName("Total lipid (fat)(g)") val totalLipidFat: Double = 0.0,
+    @SerializedName("dietID") val dietId: Int = 0
 )

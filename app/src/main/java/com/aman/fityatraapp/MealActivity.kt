@@ -68,12 +68,12 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
 
             if (responseMeal.isSuccessful) {
                 val totalCalories = responseMeal.body()?.total_calories?.toInt() ?: 0
+                Toast.makeText(this@MealActivity, "Meal Added successfully", Toast.LENGTH_SHORT).show()
                 firebaseUtils.addOrUpdateHealthData(null, mealList, 0, totalCalories, 0,0.0f,0.0f, onSuccess = {}, onFailure = {})
-
-                showToast("Meal Added successfully")
                 mealList.clear()
                 mealList.add(MealAdd())
                 mealAddAdapter.notifyDataSetChanged()
+
             }
         }
     }
@@ -84,9 +84,6 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
         mealAddAdapter.notifyItemRemoved(position)
     }
 
-    private fun showToast(s: String) {
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
-    }
 
 }
 

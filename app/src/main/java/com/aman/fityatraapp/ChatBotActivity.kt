@@ -35,9 +35,7 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.InputStreamReader
@@ -270,7 +268,10 @@ class ChatBotActivity : AppCompatActivity() {
         }
     }
     private fun setupChatBot(snapshot: DataSnapshot) {
-        addChatMessage("Welcome To the App! How can I assist you with your health?")
+        lifecycleScope.launch {
+            delay(500)
+            addChatMessage("Welcome To the App! How can I assist you with your health?")
+        }
     }
 
 
@@ -402,7 +403,7 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun scrollToBottom() {
         scrollView.post {
-            scrollView.scrollTo(0,scrollView.maxScrollAmount)
+            scrollView.scrollTo(0,scrollView.bottom)
         }
     }
     private fun saveUserData() {
@@ -450,6 +451,7 @@ class ChatBotActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val response = apiService.generateDietPlan(userData)
             if(response.isSuccessful){
+                Log.d("response", response.body()!!.toString())
                 firebaseUtils.saveDietPlan(response.body()!!)
                 addChatMessage("Diet Plan Generated Successfully")
             }
