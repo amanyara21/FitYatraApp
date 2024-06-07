@@ -1,15 +1,15 @@
 package com.aman.fityatraapp.models
 
 data class Meal(
-    val CarbohydrateByDifference: Double,
-    val Category: String,
-    val Energy: Int,
-    val FoodName: String,
-    val Meal: String,
-    val Protein: Double,
-    val SugarsTotalIncludingNLEA: Double,
-    val TotalLipid: Double,
-    val dietID: Int
+    val Carbohydrate: Double = 0.0,
+    val Category: String = "",
+    val Energy: Int = 0,
+    val Foodname: String = "",
+    val Meal: String = "",
+    val Protein: Double = 0.0,
+    val Sugars: Double = 0.0,
+    val fat: Double = 0.0,
+    val DietID: Int = 0
 )
 
 data class DayPlan(

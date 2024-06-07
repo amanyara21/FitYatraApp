@@ -62,7 +62,7 @@ dependencies {
     implementation libs.pose.detection.common
     implementation libs.pose.detection
     implementation libs.androidx.recyclerview
-    implementation libs.volley
+    implementation(libs.generativeai)
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core

@@ -66,7 +66,7 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
             val responseMeal = responseMealDeferred.await()
 
             if (responseMeal.isSuccessful) {
-                val totalCalories = responseMeal.body()?.total_calories ?: 0
+                val totalCalories = responseMeal.body()?.total_calories?.toInt() ?: 0
                 firebaseUtils.addOrUpdateHealthData(null, mealList, 0, totalCalories, 0,0.0f,0.0f, onSuccess = {}, onFailure = {})
             }
         }

@@ -24,7 +24,7 @@ class ExerciseAddAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val exercise = exerciseList[position]
         holder.editExerciseName.setText(exercise.exerciseName)
-        holder.editDuration.setText(exercise.time.toString())
+        holder.editDuration.setText(exercise.duration.toString())
 
         holder.ivDelete.setOnClickListener {
             onDeleteClickListener.onDeleteClick(position, "exercise")
@@ -35,7 +35,7 @@ class ExerciseAddAdapter(
         }
 
         holder.editDuration.addTextChangedListener {
-            exerciseList[position].time = it.toString().toIntOrNull() ?: 0
+            exerciseList[position].duration = it.toString().toIntOrNull() ?: 0
         }
     }
 

@@ -11,6 +11,7 @@ import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
 import java.io.Serializable
+import java.time.Duration
 import java.util.Date
 
 
@@ -75,9 +76,9 @@ data class HealthApiResponse(
 
 
 data class Item(val item: String, val quantity: Int)
-data class exerItem(val activity: String, val time: Int)
-data class CaloriesIntakeResponse(val total_calories: Int)
-data class CaloriesBurnResponse(val total_calorie_burn: Int)
+data class exerItem(val exercise_name: String, val duration:  Int, val weight: Int =60)
+data class CaloriesIntakeResponse(val total_calories: Float)
+data class CaloriesBurnResponse(val calories_burnt: Float)
 
 
 interface ApiServices {
@@ -86,8 +87,8 @@ interface ApiServices {
     suspend fun calculateCalories(@Body items: List<Item>): Response<CaloriesIntakeResponse>
 
     @Headers("Content-Type: application/json")
-    @POST("/calculate_calorie_burn")
-    suspend fun calculateCaloriesBurn(@Body items: List<exerItem>): Response<CaloriesBurnResponse>
+    @POST("/calculate_calories")
+    suspend fun calculateCaloriesBurn(@Body items: exerItem): Response<CaloriesBurnResponse>
 
     @Headers("Content-Type: application/json")
     @POST("/generate_diet_plan")

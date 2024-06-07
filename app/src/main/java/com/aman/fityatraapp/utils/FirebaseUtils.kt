@@ -3,6 +3,7 @@ package com.aman.fityatraapp.utils
 import android.content.Context
 import android.util.Log
 import com.aman.fityatraapp.R
+import com.aman.fityatraapp.models.DietPlan
 import com.aman.fityatraapp.models.Exercise
 import com.aman.fityatraapp.models.ExerciseAdd
 import com.aman.fityatraapp.models.MealAdd
@@ -17,7 +18,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.gson.JsonArray
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.Date
@@ -94,8 +94,8 @@ class FirebaseUtils {
                                 it.exerciseName.equals(exercise.exerciseName, ignoreCase = true)
                             }
                             if (existingExerciseIndex != null && existingExerciseIndex != -1) {
-                                data.exercises[existingExerciseIndex].time =
-                                    data.exercises[existingExerciseIndex].time.plus(exercise.time)
+                                data.exercises[existingExerciseIndex].duration =
+                                    data.exercises[existingExerciseIndex].duration.plus(exercise.duration)
                             } else {
                                 data.exercises?.add(exercise)
                             }
@@ -262,7 +262,7 @@ class FirebaseUtils {
     }
 
 
-    suspend fun saveDietPlan(dietPlan: JsonArray) {
+    suspend fun saveDietPlan(dietPlan: List<DietPlan>) {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         val dietPlanRef = FirebaseDatabase.getInstance().reference.child("$uid/dietplan")
 

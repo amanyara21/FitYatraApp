@@ -21,16 +21,6 @@ class HomeViewModel : ViewModel() {
     val todayData: MutableLiveData<HealthApiResponse?> get() = _todayData
 
 
-    fun fetchUserData() {
-        val currentUser = auth.currentUser
-        currentUser?.let {
-            db.child("users").child(it.uid).get().addOnSuccessListener { snapshot ->
-                val user = snapshot.getValue<User>()
-                _userData.value = user
-            }.addOnFailureListener {
-                // Handle error
-            }
-        }
-    }
+
 
 }

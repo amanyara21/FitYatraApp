@@ -21,4 +21,6 @@
     <string name="add_meal">Add Meal</string>
     <string name="add_exercise">Add Exercise</string>
     <string name="title_diet_chart">Diet Chart</string>
+    <string name="gemin_api_key">AIzaSyAq70kaOeY0Dv8341W66B9ilvVW0wgOqVQ</string>
+    <string name="privacy_policy">Lorem ipsum dolor sit amet, consectetur adipiscing elit....\n</string>
 </resources>

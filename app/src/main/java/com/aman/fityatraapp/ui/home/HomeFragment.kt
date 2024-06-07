@@ -12,12 +12,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.aman.fityatraapp.ExerciseAddActivity
 import com.aman.fityatraapp.MealActivity
 import com.aman.fityatraapp.R
 import com.aman.fityatraapp.databinding.FragmentHomeBinding
 import com.aman.fityatraapp.utils.FirebaseUtils
+import com.google.firebase.auth.FirebaseAuth
 
 
 class HomeFragment : Fragment() {
@@ -69,11 +69,7 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
-        viewModel.userData.observe(viewLifecycleOwner) { user ->
-            user?.let {
-                binding.nameTextView.text = "${it.name}!✌️"
-            }
-        }
+        binding.nameTextView.text = FirebaseAuth.getInstance().currentUser?.displayName
     }
     private fun openWeightEditor() {
         val builder = AlertDialog.Builder(requireContext())
@@ -128,9 +124,5 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.fetchUserData()
-    }
 }
 

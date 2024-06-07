@@ -47,22 +47,33 @@ class ExerciseAddActivity : AppCompatActivity(), ExerciseAddAdapter.OnDeleteClic
         }
 
         saveBtn.setOnClickListener {
-            calculateCaloriesBurn()
+            saveExerciseData()
         }
     }
 
-    private fun calculateCaloriesBurn() {
-        val exercise = exerciseList.map { exerItem(it.exerciseName, it.time) }
-        Log.d("exercise", exercise.toString())
-
+    private fun saveExerciseData() {
         lifecycleScope.launch {
-            val responseExerDeferred = async { apiService.calculateCaloriesBurn(exercise) }
-            val responseExer = responseExerDeferred.await()
-
-            if (responseExer.isSuccessful) {
-                val totalCaloriesBurn = responseExer.body()?.total_calorie_burn ?: 0
-                firebaseUtils.addOrUpdateHealthData(exerciseList, null, 0, 0, totalCaloriesBurn, 0.0f,0.0f, onSuccess = {}, onFailure = {})
+            val exercises = exerciseList.map { exerItem(it.exerciseName, it.duration) }
+            var totalCalories = 0
+            exercises.forEach { exercise ->
+                try {
+                    val response = apiService.calculateCaloriesBurn(exercise)
+                    if (response.isSuccessful) {
+                        val caloriesForExercise = response.body()?.calories_burnt?.toInt() ?: 0
+                        totalCalories += caloriesForExercise
+                    } else {
+                        Log.e("Error", "Failed to calculate calories for ${exercise.exercise_name}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("Error", "Exception occurred: ${e.message}")
+                }
             }
+            Log.d("response", "Total calories burned: $totalCalories")
+            firebaseUtils.addOrUpdateHealthData(
+                exerciseList, null, null, null, totalCalories, null, null,
+                onSuccess = { },
+                onFailure = { e -> Log.e("Error", e.message.toString()) }
+            )
         }
     }
 

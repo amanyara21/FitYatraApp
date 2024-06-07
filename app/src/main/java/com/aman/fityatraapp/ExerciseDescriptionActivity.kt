@@ -96,14 +96,14 @@ class ExerciseDescriptionActivity : AppCompatActivity() {
         val elapsedMinutes = ((elapsedMillis / 1000) / 60).toInt()
 
         val exerciseName = intent.getStringExtra("exerciseName")
-        val exerciseItem = listOf(exerItem(exerciseName!!, elapsedMinutes))
+        val exerciseItem = exerItem(exerciseName!!, elapsedMinutes)
         val exerciseList = listOf(ExerciseAdd(exerciseName, elapsedMinutes))
 
         lifecycleScope.launch {
             try {
                 val responseExer = apiService.calculateCaloriesBurn(exerciseItem)
                 if (responseExer.isSuccessful) {
-                    val totalCaloriesBurn = responseExer.body()?.total_calorie_burn ?: 0
+                    val totalCaloriesBurn = responseExer.body()?.calories_burnt?.toInt() ?: 0
 
                     firebaseUtils.addOrUpdateHealthData(
                         exercises = exerciseList,

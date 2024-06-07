@@ -68,6 +68,10 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        binding.fabChat.setOnClickListener{
+            val intent = Intent(this, ChatBotActivity::class.java)
+            startActivity(intent)
+        }
 
         if (intent.getBooleanExtra("SHOW_DIET_PLAN_FRAGMENT", false)) {
             navController.navigate(R.id.navigation_diet)
@@ -98,6 +102,10 @@ class MainActivity : AppCompatActivity() {
                     // Navigate to the notifications fragment
                     navController.navigate(R.id.navigation_posture)
                     true
+                }R.id.navigation_diet -> {
+                    // Navigate to the notifications fragment
+                    navController.navigate(R.id.navigation_diet)
+                    true
                 }
                 // Add cases for other bottom tabs if needed
                 else -> false
@@ -105,49 +113,51 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        // Remove the else condition to always handle navigation to the home fragment
-        // else {
-        //     // Handle other cases or display default fragment
-        // }
+        if (HealthConnectClient.isAvailable(this)) {
+            checkPermissionsAndRun()
+        } else {
+            Toast.makeText(
+                this, "Health Connect is not available", Toast.LENGTH_SHORT
+            ).show()
+        }
+
+
     }
+    private fun checkPermissionsAndRun() {
+        val client = HealthConnectClient.getOrCreate(this)
+        val requestPermissionActivityContract = client
+            .permissionController
+            .createRequestPermissionActivityContract()
+
+        val requestPermissions = registerForActivityResult(
+            requestPermissionActivityContract
+        ) { granted ->
+            if (granted.containsAll(PERMISSIONS)) {
+                // Permissions successfully granted
+                lifecycleScope.launch {
+                    onPermissionAvailable(client)
+                }
+            } else {
+                Toast.makeText(
+                    this, "Permissions not granted", Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        lifecycleScope.launch {
+            val granted = client.permissionController
+                .getGrantedPermissions(PERMISSIONS)
+            if (granted.containsAll(PERMISSIONS)) {
+                onPermissionAvailable(client)
+            } else {
+                requestPermissions.launch(PERMISSIONS)
+            }
+        }
+    }
+
+    private suspend fun onPermissionAvailable(client: HealthConnectClient) {
+    }
+
 }
 
-//        checkHealthConnectAvailability()
-//        val permissionController= HealthConnectClient.getOrCreate(this).permissionController
-//
-//        val requestPermissions = registerForActivityResult(permissionController.createRequestPermissionActivityContract()){grantedPermissins->
-//            if (grantedPermissins.containsAll(PERMISSIONS)){
-//                val healthConnectManager= HealthConnectManager(this)
-//                lifecycleScope.launch {
-//                    healthConnectManager.fetchHealthData()
-//                }
-//            }else{
-//
-//            }
-//
-//        }
-
-
-
-//    private fun checkHealthConnectAvailability() {
-//        val providerPackageNameList = listOf(
-//            "com.google.android.apps.healthdata"
-//        )
-//        val availabilityStatus = HealthConnectClient.isAvailable(this, providerPackageNameList)
-//        if (!availabilityStatus) {
-//
-//            val uriString =
-//                "market://details?id=$providerPackageNameList&url=healthconnect%3A%2F%2Fonboarding"
-//            startActivity(Intent(Intent.ACTION_VIEW).apply {
-//                setPackage("com.android.vending")
-//                data = Uri.parse(uriString)
-//                putExtra("overlay", true)
-//                putExtra("callerId", packageName)
-//            })
-//            return
-//        } else {
-//            Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show()
-//        }
-//
-//    }
 

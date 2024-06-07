@@ -9,9 +9,8 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
     private const val BASE_URL = "https://server-py-5l3l.onrender.com/"
 
-    // Increase the timeout to 2 minutes
     private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(180, TimeUnit.SECONDS)
+        .connectTimeout(120, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
         .writeTimeout(120, TimeUnit.SECONDS)
         .build()

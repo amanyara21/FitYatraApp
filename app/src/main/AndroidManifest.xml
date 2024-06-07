@@ -15,11 +15,15 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <meta-data
         android:name="com.google.health.FIt_YATRA"
         android:value="@string/app_name" />
+
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -52,7 +56,7 @@
             android:exported="false" />
         <activity
             android:name=".ChatBotActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,28 +65,22 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="false">
-
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".ExerciseDescriptionActivity"
             android:exported="false" />
         <activity
             android:name=".CameraActivity"
             android:exported="false" />
-
-        <activity android:name=".PermissionsRationaleActivity" android:exported="true">
+        <activity
+            android:exported="true"
+            android:name=".PrivacyPolicyActiviity">
             <intent-filter>
-                <action
-                    android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
             </intent-filter>
+            <meta-data android:name="health_permissions" android:resource="@array/health_permissions" />
         </activity>
+
     </application>
-
-    <queries>
-        <package android:name="com.google.android.apps.healthdata" />
-    </queries>
-
-
 
 </manifest>
