@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +15,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.aman.fityatraapp.R
@@ -58,7 +58,8 @@ class PostureDetectionFragment : Fragment() {
         title = view.findViewById(R.id.headerTitle)
         recyclerView = view.findViewById(R.id.exerciseRecyclerView)
 
-        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         title.text = getString(R.string.check_posture_problem)
 
         uploadButton.setOnClickListener {
@@ -75,7 +76,8 @@ class PostureDetectionFragment : Fragment() {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             val imageUri: Uri? = data?.data
             imageUri?.let {
-                val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, it)
+                val bitmap: Bitmap =
+                    MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, it)
                 imageView.setImageURI(imageUri)
                 runPose(bitmap)
             }

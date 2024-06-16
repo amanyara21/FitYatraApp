@@ -1,4 +1,4 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.content.Intent
 import android.net.Uri
@@ -12,10 +12,12 @@ import android.widget.Toast
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.aman.fityatraapp.R
+import com.aman.fityatraapp.models.ExerciseAdd
 import com.aman.fityatraapp.utils.ApiClient.apiService
 import com.aman.fityatraapp.utils.FirebaseUtils
-import com.aman.fityatraapp.utils.exerItem
-import com.aman.fityatraapp.models.ExerciseAdd
+import com.aman.fityatraapp.utils.SQLiteUtils
+import com.aman.fityatraapp.models.exerItem
 import kotlinx.coroutines.launch
 
 class ExerciseDescriptionActivity : AppCompatActivity() {
@@ -27,6 +29,7 @@ class ExerciseDescriptionActivity : AppCompatActivity() {
     private lateinit var cameraButton: Button
     private lateinit var chronometer: Chronometer
     private var firebaseUtils = FirebaseUtils()
+    private var sqLiteUtils = SQLiteUtils(this)
     private var isTimerRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,7 +108,7 @@ class ExerciseDescriptionActivity : AppCompatActivity() {
                 if (responseExer.isSuccessful) {
                     val totalCaloriesBurn = responseExer.body()?.calories_burnt?.toInt() ?: 0
 
-                    firebaseUtils.addOrUpdateHealthData(
+                    sqLiteUtils.addOrUpdateHealthData(
                         exercises = exerciseList,
                         meals = emptyList(),
                         stepCount = 0,

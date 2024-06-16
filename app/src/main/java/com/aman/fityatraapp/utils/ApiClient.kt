@@ -1,9 +1,8 @@
 package com.aman.fityatraapp.utils
 
-import android.util.Log
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
@@ -23,9 +22,6 @@ object ApiClient {
 
     val apiService: ApiServices = retrofit.create(ApiServices::class.java)
 
-    fun call() {
-        println("Retrofit instance: $retrofit")
-    }
 }
 
 

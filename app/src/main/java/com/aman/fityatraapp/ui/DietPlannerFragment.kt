@@ -1,37 +1,30 @@
 package com.aman.fityatraapp.ui
 
 
-
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.aman.fityatraapp.R
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-
+import com.aman.fityatraapp.models.Meal
+import com.aman.fityatraapp.utils.SQLiteUtils
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import android.widget.ImageButton
-import com.google.firebase.auth.FirebaseAuth
+import java.util.Locale
 
 class DietPlannerFragment : Fragment() {
 
     private lateinit var viewPager: ViewPager2
-//    private lateinit var mealPlan: MutableList<DietPlan>
-private lateinit var mealPlan: MutableMap<String, Map<String, Meal>>
+    private lateinit var mealPlan: MutableMap<String, Map<String, Meal>>
     private lateinit var adapter: DietPagerAdapter
-    private lateinit var database: DatabaseReference
     private lateinit var btnPrevious: ImageButton
     private lateinit var btnNext: ImageButton
     private var currentDayIndex: Int = 0
@@ -51,67 +44,56 @@ private lateinit var mealPlan: MutableMap<String, Map<String, Meal>>
 
         mealPlan = mutableMapOf()
 
-        database = FirebaseDatabase.getInstance().reference
-
         fetchMeals()
 
         return view
     }
 
-//    private fun fetchMeals() {
-//        val database = FirebaseDatabase.getInstance()
-//        val uid = FirebaseAuth.getInstance().currentUser?.uid
-//        val reference = database.getReference("$uid/dietplan")
-//        reference.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                mealPlan.clear()
-//                val dietPlan = snapshot.getValue(DietPlan::class.java)
-//                dietPlan?.let {
-//                    mealPlan.add(it)
-//                }
-//
-//                populateViewPager()
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                // Handle database error
-//            }
-//        })
-//    }
-private fun fetchMeals() {
-    val database = FirebaseDatabase.getInstance()
-    val uid = FirebaseAuth.getInstance().currentUser?.uid
-    val reference = database.getReference("$uid/dietplan")
-    reference.addListenerForSingleValueEvent(object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            mealPlan.clear()
-            for (daySnapshot in snapshot.children) {
-                Log.d("daySnapShot", daySnapshot.key.toString())
-                val day = daySnapshot.key.toString()
-                val meals = mutableMapOf<String, Meal>()
-                for (mealSnapshot in daySnapshot.children) {
-                    val mealType = mealSnapshot.key.toString()
-                    Log.d("daySnapShot", mealType)
-                    val meal = mealSnapshot.getValue(Meal::class.java)
-                    Log.d("daySnapShot", meal.toString())
-                    if (meal != null) {
-                        meals[mealType] = meal
-                        Log.d("daySnapShot", meals[mealType].toString())
+    private fun fetchMeals() {
+        val sqliteUtils = SQLiteUtils(requireContext())
+
+        sqliteUtils.getSavedDietPlan(
+            onSuccess = { dietPlanList ->
+                mealPlan.clear()
+                for (dietPlan in dietPlanList) {
+                    Log.d("dietPlan", dietPlan.toString())
+                    for (day in listOf(
+                        "Day 1",
+                        "Day 2",
+                        "Day 3",
+                        "Day 4",
+                        "Day 5",
+                        "Day 6",
+                        "Day 7"
+                    )) {
+                        val dayPlan = when (day) {
+                            "Day 1" -> dietPlan.day1
+                            "Day 2" -> dietPlan.day2
+                            "Day 3" -> dietPlan.day3
+                            "Day 4" -> dietPlan.day4
+                            "Day 5" -> dietPlan.day5
+                            "Day 6" -> dietPlan.day6
+                            "Day 7" -> dietPlan.day7
+                            else -> null
+                        }
+                        dayPlan?.let {
+                            mealPlan[day] = mapOf(
+                                "Breakfast" to it.Breakfast,
+                                "Lunch" to it.Lunch,
+                                "Dinner" to it.Dinner
+                            )
+                        }
                     }
                 }
-                mealPlan[day] = meals
-                Log.d("daySnapShot", mealPlan[day].toString())
+
+                populateViewPager()
+            },
+            onFailure = { exception ->
+                // Handle exception
+                Log.e("DietPlannerFragment", "Error fetching meals", exception)
             }
-
-            populateViewPager()
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            // Handle database error
-        }
-    })
-}
-
+        )
+    }
 
     private fun populateViewPager() {
         adapter = DietPagerAdapter(requireContext(), mealPlan)
@@ -119,8 +101,8 @@ private fun fetchMeals() {
         val todayIndex = calculateTodayIndex()
         viewPager.setCurrentItem(todayIndex, false)
         currentDayIndex = todayIndex
-
     }
+
     private fun navigateToPreviousDay() {
         currentDayIndex = (currentDayIndex - 1 + 7) % 7
         viewPager.setCurrentItem(currentDayIndex, true)
@@ -132,7 +114,8 @@ private fun fetchMeals() {
     }
 
     private fun calculateTodayIndex(): Int {
-        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE")).toLowerCase()
+        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"))
+            .lowercase(Locale.getDefault())
 
         return when (today) {
             "monday" -> 1
@@ -146,7 +129,10 @@ private fun fetchMeals() {
         }
     }
 
-    inner class DietPagerAdapter(private val context: Context, private val mealPlan: MutableMap<String, Map<String, Meal>>) :
+    inner class DietPagerAdapter(
+        private val context: Context,
+        private val mealPlan: MutableMap<String, Map<String, Meal>>
+    ) :
         RecyclerView.Adapter<DietPagerAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -171,48 +157,48 @@ private fun fetchMeals() {
 
             fun bind(day: String, meals: Map<String, Meal>?) {
                 textDay.text = day
-                val breakfast = meals?.get("breakfast")
-                val lunch = meals?.get("lunch")
-                val dinner = meals?.get("dinner")
+                val breakfast = meals?.get("Breakfast")
+                val lunch = meals?.get("Lunch")
+                val dinner = meals?.get("Dinner")
 
                 cardBreakfast.apply {
-                    findViewById<TextView>(R.id.textBreakfastFoodname).text = breakfast?.foodName ?: "N/A"
-                    findViewById<TextView>(R.id.textBreakfastFat).text = "Fat: ${breakfast?.totalLipidFat ?: "N/A"}"
-                    findViewById<TextView>(R.id.textBreakfastProtein).text = "Protein: ${breakfast?.protein ?: "N/A"}"
-                    findViewById<TextView>(R.id.textBreakfastCarbohydrates).text = "Carbohydrates: ${breakfast?.carbohydrateByDifference ?: "N/A"}"
+                    findViewById<TextView>(R.id.textBreakfastFoodname).text =
+                        breakfast?.foodName ?: "N/A"
+                    findViewById<TextView>(R.id.textBreakfastFat).text =
+                        "Fat: ${breakfast?.totalLipidFat ?: "N/A"}"
+                    findViewById<TextView>(R.id.textBreakfastProtein).text =
+                        "Protein: ${breakfast?.protein ?: "N/A"}"
+                    findViewById<TextView>(R.id.textBreakfastCarbohydrates).text =
+                        "Carbohydrates: ${breakfast?.carbohydrateByDifference ?: "N/A"}"
                 }
 
                 cardLunch.apply {
                     findViewById<TextView>(R.id.textLunchFoodname).text = lunch?.foodName ?: "N/A"
-                    findViewById<TextView>(R.id.textLunchFat).text = "Fat: ${lunch?.totalLipidFat ?: "N/A"}"
-                    findViewById<TextView>(R.id.textLunchProtein).text = "Protein: ${lunch?.protein ?: "N/A"}"
-                    findViewById<TextView>(R.id.textLunchCarbohydrates).text = "Carbohydrates: ${lunch?.carbohydrateByDifference ?: "N/A"}"
+                    findViewById<TextView>(R.id.textLunchFat).text =
+                        "Fat: ${lunch?.totalLipidFat ?: "N/A"}"
+                    findViewById<TextView>(R.id.textLunchProtein).text =
+                        "Protein: ${lunch?.protein ?: "N/A"}"
+                    findViewById<TextView>(R.id.textLunchCarbohydrates).text =
+                        "Carbohydrates: ${lunch?.carbohydrateByDifference ?: "N/A"}"
                 }
 
                 cardDinner.apply {
                     findViewById<TextView>(R.id.textDinnerFoodname).text = dinner?.foodName ?: "N/A"
-                    findViewById<TextView>(R.id.textDinnerFat).text = "Fat: ${dinner?.totalLipidFat ?: "N/A"}"
-                    findViewById<TextView>(R.id.textDinnerProtein).text = "Protein: ${dinner?.protein ?: "N/A"}"
-                    findViewById<TextView>(R.id.textDinnerCarbohydrates).text = "Carbohydrates: ${dinner?.carbohydrateByDifference ?: "N/A"}"
+                    findViewById<TextView>(R.id.textDinnerFat).text =
+                        "Fat: ${dinner?.totalLipidFat ?: "N/A"}"
+                    findViewById<TextView>(R.id.textDinnerProtein).text =
+                        "Protein: ${dinner?.protein ?: "N/A"}"
+                    findViewById<TextView>(R.id.textDinnerCarbohydrates).text =
+                        "Carbohydrates: ${dinner?.carbohydrateByDifference ?: "N/A"}"
                 }
             }
         }
     }
-
 }
 
 
-data class Meal(
-    val carbohydrateByDifference: Double = 0.0,
-    val category: String = "",
-    val dietId: Int = 0,
-    val energy: Int = 0,
-    val foodName: String = "",
-    val meal: String = "",
-    val protein: Double = 0.0,
-    val sugarsTotalIncludingNLEA: Double = 0.0,
-    val totalLipidFat: Double = 0.0
-)
+
+
 
 
 

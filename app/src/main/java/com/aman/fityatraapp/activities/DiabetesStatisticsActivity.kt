@@ -1,22 +1,22 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.aman.fityatraapp.utils.FirebaseUtils
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.utils.GraphHelper
 import com.aman.fityatraapp.utils.RoundedBarChartRenderer
+import com.aman.fityatraapp.utils.SQLiteUtils
 import com.github.mikephil.charting.charts.BarChart
 
-
-class StepCountStatisticsActivity : AppCompatActivity() {
+class DiabetesStatisticsActivity : AppCompatActivity() {
     private lateinit var barChart: BarChart
     private lateinit var titleTextView: TextView
     private lateinit var graphHelper: GraphHelper
-    private var firebaseUtils = FirebaseUtils()
+    private var sqLiteUtils = SQLiteUtils(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_step_count_statistics)
+        setContentView(R.layout.activity_diabetes_statistics)
         supportActionBar?.hide()
         barChart = findViewById(R.id.barChartStepCounts)
         titleTextView = findViewById(R.id.headerTitle)
@@ -28,19 +28,19 @@ class StepCountStatisticsActivity : AppCompatActivity() {
                 barChart.viewPortHandler
             )
         barChart.renderer = roundedRenderer1
-        titleTextView.text = getString(R.string.step_counts)
+        titleTextView.text = "Glucose Level Graph"
         graphHelper = GraphHelper()
         fetchDataForStepCounts(barChart)
     }
 
     private fun fetchDataForStepCounts(barChart: BarChart) {
-        firebaseUtils.getLast7DaysData(
+        sqLiteUtils.getLast7DaysData(
             onSuccess = { data ->
                 graphHelper.displayGraph(
                     data,
                     barChart,
-                    { it.stepCount },
-                    "Step Counts",
+                    { it.glucoseLevel },
+                    "Glucose Level",
                     resources.getColor(R.color.purple_200)
                 )
             },
@@ -50,5 +50,3 @@ class StepCountStatisticsActivity : AppCompatActivity() {
         )
     }
 }
-
-

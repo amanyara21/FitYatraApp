@@ -1,24 +1,23 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.aman.fityatraapp.utils.FirebaseUtils
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.utils.GraphHelper
 import com.aman.fityatraapp.utils.RoundedBarChartRenderer
+import com.aman.fityatraapp.utils.SQLiteUtils
 import com.github.mikephil.charting.charts.BarChart
 
-class DiabetesStatisticsActivity : AppCompatActivity() {
+class WeightStatisticsActivity : AppCompatActivity() {
     private lateinit var barChart: BarChart
     private lateinit var titleTextView: TextView
     private lateinit var graphHelper: GraphHelper
-    private var firebaseUtils = FirebaseUtils()
+    private var sqliteUtils = SQLiteUtils(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_diabetes_statistics)
+        setContentView(R.layout.activity_weight_statistics)
         supportActionBar?.hide()
         barChart = findViewById(R.id.barChartStepCounts)
         titleTextView = findViewById(R.id.headerTitle)
@@ -30,19 +29,20 @@ class DiabetesStatisticsActivity : AppCompatActivity() {
                 barChart.viewPortHandler
             )
         barChart.renderer = roundedRenderer1
-        titleTextView.text = "Glucose Level Graph"
+        titleTextView.text = "Weight Graph"
         graphHelper = GraphHelper()
         fetchDataForStepCounts(barChart)
     }
 
     private fun fetchDataForStepCounts(barChart: BarChart) {
-        firebaseUtils.getLast7DaysData(
+        sqliteUtils.getLast7DaysData(
             onSuccess = { data ->
+                Log.d("dataWeight", data.toString())
                 graphHelper.displayGraph(
                     data,
                     barChart,
-                    { it.glucoseLevel },
-                    "Glucose Level",
+                    { it.weight },
+                    "Weight",
                     resources.getColor(R.color.purple_200)
                 )
             },

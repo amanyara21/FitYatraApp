@@ -1,48 +1,75 @@
 package com.aman.fityatraapp.utils
 
 import android.content.Context
-import androidx.health.connect.client.HealthConnectClient
-
 import android.util.Log
-import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.response.ReadRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 
 
 class HealthConnectManager(private val context: Context) {
 
-    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
-    private val firebaseUtils = FirebaseUtils()
+    private val healthConnectClient: HealthConnectClient? by lazy {
+        if (HealthConnectClient.sdkStatus(context) == HealthConnectClient.SDK_AVAILABLE) {
+            HealthConnectClient.getOrCreate(context)
+        } else {
+            null
+        }
+    }
 
-    val PERMISSIONS = setOf(
+    private val sqliteUtils = SQLiteUtils(context)
+
+    val permissions = setOf(
         HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
         HealthPermission.getReadPermission(BloodGlucoseRecord::class),
         HealthPermission.getReadPermission(WeightRecord::class),
         HealthPermission.getReadPermission(StepsRecord::class)
     )
 
-    private var permissionRequestLauncher: ActivityResultLauncher<Array<String>>? = null
+    // Create the permissions launcher
+    private val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
 
-    fun registerPermissionRequestLauncher(launcher: ActivityResultLauncher<Array<String>>) {
-        permissionRequestLauncher = launcher
+    private val requestPermissions = (context as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
+        if (granted.containsAll(permissions)) {
+            // Permissions successfully granted
+            CoroutineScope(Dispatchers.Main).launch {
+                fetchHealthData()
+            }
+        } else {
+            // Lack of required permissions
+            Log.w("HealthConnectManager", "Required permissions are not granted.")
+        }
     }
 
-    suspend fun fetchHealthData() {
-        if (!hasAllPermissions(PERMISSIONS)) {
-            permissionRequestLauncher?.launch(PERMISSIONS.toTypedArray())
+    suspend fun checkPermissionsAndRun() {
+        val granted = healthConnectClient?.permissionController?.getGrantedPermissions()
+        if (granted!!.containsAll(permissions)) {
+            fetchHealthData()
+        } else {
+            requestPermissions.launch(permissions)
+        }
+    }
+
+    private suspend fun fetchHealthData() {
+        val client = healthConnectClient
+        if (client == null) {
+            Log.e("HealthConnectManager", "Health Connect SDK is not available.")
             return
         }
 
@@ -68,10 +95,10 @@ class HealthConnectManager(private val context: Context) {
 
         val results = try {
             withContext(Dispatchers.IO) {
-                val stepsResult = healthConnectClient.readRecords(stepCountQuery)
-                val weightResult = healthConnectClient.readRecords(weightQuery)
-                val glucoseResult = healthConnectClient.readRecords(glucoseLevelQuery)
-                val caloriesBurnedResult = healthConnectClient.readRecords(calorieBurnQuery)
+                val stepsResult = client.readRecords(stepCountQuery)
+                val weightResult = client.readRecords(weightQuery)
+                val glucoseResult = client.readRecords(glucoseLevelQuery)
+                val caloriesBurnedResult = client.readRecords(calorieBurnQuery)
 
                 Data(stepsResult, weightResult, glucoseResult, caloriesBurnedResult)
             }
@@ -82,8 +109,7 @@ class HealthConnectManager(private val context: Context) {
 
         val stepCount = results.stepsResult.records.sumOf { it.count }
         val weight = results.weightResult.records.lastOrNull()?.weight?.inKilograms?.toFloat()
-        val glucoseLevel =
-            results.glucoseResult.records.lastOrNull()?.level?.inMilligramsPerDeciliter
+        val glucoseLevel = results.glucoseResult.records.lastOrNull()?.level?.inMilligramsPerDeciliter
         val caloriesBurned = results.caloriesBurnedResult.records.lastOrNull()?.energy?.inCalories
 
         saveDataToFirebase(
@@ -100,7 +126,7 @@ class HealthConnectManager(private val context: Context) {
         glucoseLevel: Float?,
         caloriesBurned: Int?
     ) {
-        firebaseUtils.addOrUpdateHealthData(
+        sqliteUtils.addOrUpdateHealthData(
             exercises = null,
             meals = null,
             stepCount = stepCount,
@@ -116,16 +142,9 @@ class HealthConnectManager(private val context: Context) {
             }
         )
     }
-
-    suspend fun hasAllPermissions(permissions: Set<String>): Boolean {
-        return healthConnectClient.permissionController.getGrantedPermissions()
-            .containsAll(permissions)
-    }
-
-    fun requestPermissionsActivityContract(): ActivityResultContracts.RequestMultiplePermissions {
-        return ActivityResultContracts.RequestMultiplePermissions()
-    }
 }
+
+
 
 data class Data(
     val stepsResult: ReadRecordsResponse<StepsRecord>,

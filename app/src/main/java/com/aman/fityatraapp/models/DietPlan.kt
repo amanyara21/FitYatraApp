@@ -4,13 +4,13 @@ import com.google.gson.annotations.SerializedName
 
 
 data class DietPlan(
-    @SerializedName("Day 1") val day1: DayPlan = DayPlan(),
-    @SerializedName("Day 2") val day2: DayPlan = DayPlan(),
-    @SerializedName("Day 3") val day3: DayPlan = DayPlan(),
-    @SerializedName("Day 4") val day4: DayPlan = DayPlan(),
-    @SerializedName("Day 5") val day5: DayPlan = DayPlan(),
-    @SerializedName("Day 6") val day6: DayPlan = DayPlan(),
-    @SerializedName("Day 7") val day7: DayPlan = DayPlan()
+    @SerializedName("Day 1") var day1: DayPlan = DayPlan(),
+    @SerializedName("Day 2") var day2: DayPlan = DayPlan(),
+    @SerializedName("Day 3") var day3: DayPlan = DayPlan(),
+    @SerializedName("Day 4") var day4: DayPlan = DayPlan(),
+    @SerializedName("Day 5") var day5: DayPlan = DayPlan(),
+    @SerializedName("Day 6") var day6: DayPlan = DayPlan(),
+    @SerializedName("Day 7") var day7: DayPlan = DayPlan()
 )
 
 data class DayPlan(

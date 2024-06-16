@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChatBotActivity">
+    tools:context=".activities.ChatBotActivity">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -17,38 +17,38 @@
             android:id="@+id/chatLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"/>
+            android:orientation="vertical" />
 
     </ScrollView>
+
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign In with Google"/>
+        android:text="Sign In with Google"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/inputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:background="@android:color/white"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="@android:color/white">
+        android:padding="8dp">
 
         <EditText
             android:id="@+id/inputField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Type your answer here"/>
+            android:hint="Type your answer here" />
 
         <Button
             android:id="@+id/sendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send"/>
-
+            android:text="Send" />
 
 
     </LinearLayout>
@@ -57,121 +57,124 @@
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_above="@+id/inputLayout">
+        android:layout_above="@+id/inputLayout"
+        android:visibility="gone">
 
         <LinearLayout
             android:id="@+id/container"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/mealInputPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Show Meal Input"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Show Meal Input"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/exercisePrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Navigate to Exercise Fragment"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Navigate to Exercise Fragment"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/weightPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Open Weight Editor"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Open Weight Editor"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/glucosePrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Open Glucose Editor"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Open Glucose Editor"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/dietPlanPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Navigate to Diet Plan Fragment"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Navigate to Diet Plan Fragment"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/addDataPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Data"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Add Data"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/mainPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Navigate to Main Activity"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Navigate to Main Activity"
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/posturePrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Posture Detection"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Posture Detection"
+                android:textColor="@android:color/black" />
+
             <TextView
                 android:id="@+id/calorieStat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Show Calorie Graph"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Show Calorie Graph"
+                android:textColor="@android:color/black" />
+
             <TextView
                 android:id="@+id/stepStatPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Show Step Counts"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Show Step Counts"
+                android:textColor="@android:color/black" />
+
             <TextView
                 android:id="@+id/weightStatPrompt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Show weight Graph"
-                android:padding="16dp"
+                android:layout_margin="10dp"
                 android:background="@drawable/prompt_background"
-                android:textColor="@android:color/black"
-                android:layout_margin="10dp" />
+                android:padding="16dp"
+                android:text="Show weight Graph"
+                android:textColor="@android:color/black" />
 
 
         </LinearLayout>

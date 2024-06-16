@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ExerciseAddActivity">
+    tools:context=".activities.ExerciseAddActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,14 +22,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Exercise Name"
                     android:layout_weight="1"
+                    android:text="Exercise Name"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -46,8 +46,8 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/exercise_recycler_view"
                 android:layout_width="match_parent"
-                tools:listitem="@layout/item_exercise"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_exercise" />
 
             <Button
                 android:id="@+id/iv_add_exercise"
@@ -57,16 +57,16 @@
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/button_background"
                 android:padding="10dp"
-                android:textColor="@color/white"
-                android:text="Add New Exercise" />
+                android:text="Add New Exercise"
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/saveBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_background"
-                android:textColor="@color/white"
-                android:text="Save Exercise Data" />
+                android:text="Save Exercise Data"
+                android:textColor="@color/white" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

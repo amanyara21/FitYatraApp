@@ -1,4 +1,4 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -19,6 +19,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.utils.Display
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage

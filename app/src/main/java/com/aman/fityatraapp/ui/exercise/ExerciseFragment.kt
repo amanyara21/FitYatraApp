@@ -7,42 +7,39 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.aman.fityatraapp.R
+import com.aman.fityatraapp.databinding.FragmentExerciseBinding
 import com.aman.fityatraapp.utils.ExerciseAdapter
-import com.aman.fityatraapp.utils.FirebaseUtils
 
 class ExerciseFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var binding: FragmentExerciseBinding
+    private lateinit var viewModel: ExerciseViewModel
     private lateinit var adapter: ExerciseAdapter
     private lateinit var title: TextView
-    private lateinit var firebaseUtils: FirebaseUtils
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_exercise, container, false)
+    ): View {
+        binding = FragmentExerciseBinding.inflate(inflater, container, false)
         (activity as AppCompatActivity).supportActionBar?.hide()
-
-        firebaseUtils = FirebaseUtils()
-        recyclerView = view.findViewById(R.id.exerciseRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        title = view.findViewById(R.id.headerTitle)
+        viewModel = ViewModelProvider(this)[ExerciseViewModel::class.java]
+        title = binding.root.findViewById(R.id.headerTitle)
         title.text = getString(R.string.exercises)
 
-        getExercises()
+        binding.exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        return view
-    }
-
-    private fun getExercises() {
-        firebaseUtils.getAllExercises { exercises ->
-            exercises.let {
-                adapter = ExerciseAdapter(it)
-                recyclerView.adapter = adapter
-            }
+        viewModel.exercises.observe(viewLifecycleOwner) { exercises ->
+            adapter = ExerciseAdapter(exercises)
+            binding.exerciseRecyclerView.adapter = adapter
         }
+
+        viewModel.getExercises()
+
+        return binding.root
     }
+
 }

@@ -1,7 +1,6 @@
 package com.aman.fityatraapp.utils
 
 
-
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResultLauncher
@@ -19,8 +18,12 @@ class PermissionManager {
     private var isCameraPermissionGranted = false
     private var isPostNotificationPermissionGranted = false
 
-    fun initPermissionLauncher(activity: AppCompatActivity) {
+    private var permissionCallback: PermissionCallback? = null
+
+    fun initPermissionLauncher(activity: AppCompatActivity, callback: PermissionCallback) {
         this.activity = activity
+        this.permissionCallback = callback
+
         permissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
                 permissions.entries.forEach { entry ->
@@ -39,11 +42,25 @@ class PermissionManager {
                             entry.value
                     }
                 }
+
+                if (isPhysicalActivityPermissionGranted && isPostNotificationPermissionGranted){
+                    permissionCallback?.onPermissionsGranted()
+                }
+                // Check if all required permissions are granted
+                if (isReadStoragePermissionGranted &&
+                    isPhysicalActivityPermissionGranted &&
+                    isReadMediaPermissionGranted &&
+                    isCameraPermissionGranted &&
+                    isPostNotificationPermissionGranted
+                ) {
+                    permissionCallback?.onPermissionsGranted()
+                }
             }
-        requestPermission()
+
+        requestPermissions()
     }
 
-    private fun requestPermission() {
+    private fun requestPermissions() {
         isReadStoragePermissionGranted = ContextCompat.checkSelfPermission(
             activity,
             Manifest.permission.READ_EXTERNAL_STORAGE
@@ -83,9 +100,16 @@ class PermissionManager {
             permissionRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-
         if (permissionRequest.isNotEmpty()) {
             permissionLauncher.launch(permissionRequest.toTypedArray())
+        } else {
+            // All permissions are already granted
+            permissionCallback?.onPermissionsGranted()
         }
     }
+
+    interface PermissionCallback {
+        fun onPermissionsGranted()
+    }
 }
+

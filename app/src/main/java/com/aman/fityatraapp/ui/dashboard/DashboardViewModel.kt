@@ -1,35 +1,50 @@
 package com.aman.fityatraapp.ui.dashboard
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.aman.fityatraapp.models.Exercise
-import com.aman.fityatraapp.models.User
-import com.aman.fityatraapp.utils.HealthApiResponse
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.getValue
+import com.aman.fityatraapp.models.Goal
+import com.aman.fityatraapp.utils.SQLiteUtils
 
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val db = FirebaseDatabase.getInstance().reference
-    private val auth = FirebaseAuth.getInstance()
+    private val sqliteUtils: SQLiteUtils = SQLiteUtils(application)
 
-    private val _todayData = MutableLiveData<HealthApiResponse?>()
-    val todayData: MutableLiveData<HealthApiResponse?> get() = _todayData
+    private val _goalsLiveData = MutableLiveData<List<Goal>>()
+    val goalsLiveData: LiveData<List<Goal>>
+        get() = _goalsLiveData
 
+    private val _updateGoalSuccess = MutableLiveData<Unit>()
 
-    fun fetchTodayData() {
-        val currentUser = auth.currentUser
-        currentUser?.let {
-            db.child("todayData").child(it.uid).get().addOnSuccessListener { snapshot ->
-                val data = snapshot.getValue<HealthApiResponse>()
-                _todayData.value = data
-            }.addOnFailureListener { _ ->
-                // Handle error
-            }
-        }
+    private val _errorLiveData = MutableLiveData<String>()
+
+    init {
+        getGoals()
     }
 
+    fun getGoals() {
+        sqliteUtils.getGoals(
+            onSuccess = { goals ->
+                _goalsLiveData.postValue(goals)
+            },
+            onFailure = { exception ->
+                _errorLiveData.postValue("Failed to fetch goals: ${exception.message}")
+            }
+        )
+    }
 
+    fun updateGoal(goal: Goal) {
+        sqliteUtils.updateGoal(
+            goal = goal,
+            onSuccess = {
+                _updateGoalSuccess.postValue(Unit)
+                // Reload goals after successful update
+                getGoals()
+            },
+            onFailure = { exception ->
+                _errorLiveData.postValue("Failed to update goal: ${exception.message}")
+            }
+        )
+    }
 }

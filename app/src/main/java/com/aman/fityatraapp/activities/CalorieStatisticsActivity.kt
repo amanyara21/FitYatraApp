@@ -1,12 +1,13 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.aman.fityatraapp.utils.FirebaseUtils
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.utils.GraphHelper
 import com.aman.fityatraapp.utils.RoundedBarChartRenderer
+import com.aman.fityatraapp.utils.SQLiteUtils
 import com.github.mikephil.charting.charts.BarChart
 
 class CalorieStatisticsActivity : AppCompatActivity() {
@@ -15,14 +16,14 @@ class CalorieStatisticsActivity : AppCompatActivity() {
     private lateinit var barChartCalorieIntake: BarChart
     private lateinit var title: TextView
     private lateinit var graphHelper: GraphHelper
-    private lateinit var firebaseUtils: FirebaseUtils
+    private lateinit var sqliteUtils: SQLiteUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calorie_statistics)
         supportActionBar?.hide()
 
-        firebaseUtils = FirebaseUtils()
+        sqliteUtils = SQLiteUtils(this)
 
         // Initialize BarCharts
         barChartCalorieBurn = findViewById(R.id.barChartCalorieBurn)
@@ -53,15 +54,17 @@ class CalorieStatisticsActivity : AppCompatActivity() {
     }
 
     private fun fetchCalorieData(barChart1: BarChart, barChart2: BarChart) {
-        firebaseUtils.getLast7DaysData(
+        sqliteUtils.getLast7DaysData(
             onSuccess = { data ->
-                graphHelper.displayGraph( data,
+                graphHelper.displayGraph(
+                    data,
                     barChart1,
                     { it.calorieBurn },
                     "Calories Burn",
                     resources.getColor(R.color.purple_200)
                 )
-                graphHelper.displayGraph( data,
+                graphHelper.displayGraph(
+                    data,
                     barChart2,
                     { it.calorieIntake },
                     "Calories Intake",

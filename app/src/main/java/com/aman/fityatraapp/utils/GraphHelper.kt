@@ -1,6 +1,8 @@
 package com.aman.fityatraapp.utils
 
 
+import android.graphics.Color
+import com.aman.fityatraapp.models.HealthData
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -17,29 +19,29 @@ class GraphHelper {
         barChart: BarChart,
         attribute: (HealthData) -> Number?,
         title: String,
-        color: Int
+        color: Int = Color.BLUE
     ) {
         val entries = mutableListOf<BarEntry>()
         val labels = mutableListOf<String>()
 
-        val currentDate = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("d", Locale.getDefault())
+        val dateToValueMap = data.associateBy { dateFormat.format(it.date) }
+
+        val currentDate = Calendar.getInstance()
         for (i in 0..6) {
             val date = currentDate.clone() as Calendar
             date.add(Calendar.DATE, -6 + i)
             val dateString = dateFormat.format(date.time)
             labels.add(dateString)
-            val value =
-                data.find { healthApiResponse -> dateFormat.format(healthApiResponse.date) == dateString }
-                    ?.let(attribute)?.toFloat() ?: 0f // Finding corresponding value for the date
+            val value = dateToValueMap[dateString]?.let(attribute)?.toFloat() ?: 0f
             entries.add(BarEntry(i.toFloat(), value))
         }
-
 
         val dataSet = BarDataSet(entries, title)
         dataSet.color = color
         dataSet.valueTextColor = color
-        dataSet.valueTextSize = 12F
+        dataSet.valueTextSize = 12f
+
         val barData = BarData(dataSet)
         val barWidth = 0.4f
         barData.barWidth = barWidth
@@ -48,7 +50,6 @@ class GraphHelper {
         barChart.data = barData
         barChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         barChart.invalidate()
-
     }
-
 }
+

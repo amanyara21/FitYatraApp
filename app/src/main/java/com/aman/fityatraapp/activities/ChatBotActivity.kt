@@ -1,4 +1,4 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -16,30 +16,23 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.models.ExerciseAdd
 import com.aman.fityatraapp.models.MealAdd
-import com.aman.fityatraapp.models.UserHealthData
+import com.aman.fityatraapp.models.UserData
 import com.aman.fityatraapp.utils.ApiClient.apiService
 import com.aman.fityatraapp.utils.ExerciseAddAdapter
-import com.aman.fityatraapp.utils.FirebaseUtils
-import com.aman.fityatraapp.utils.Item
+import com.aman.fityatraapp.models.Item
 import com.aman.fityatraapp.utils.MealAddAdapter
 import com.aman.fityatraapp.utils.PermissionManager
-import com.aman.fityatraapp.utils.exerItem
+import com.aman.fityatraapp.utils.SQLiteUtils
+import com.aman.fityatraapp.models.exerItem
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DataSnapshot
 import com.google.gson.Gson
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.InputStreamReader
-
 
 
 data class Question(
@@ -49,8 +42,7 @@ data class Question(
 )
 
 class ChatBotActivity : AppCompatActivity() {
-
-    private lateinit var auth: FirebaseAuth
+    private lateinit var sqLiteUtils: SQLiteUtils
     private lateinit var chatLayout: LinearLayout
     private lateinit var inputLayout: LinearLayout
     private lateinit var inputField: EditText
@@ -59,7 +51,6 @@ class ChatBotActivity : AppCompatActivity() {
     private var currentQuestionIndex = 0
     private val questions = mutableListOf<Question>()
     private val userData = mutableMapOf<String, String>()
-    private val firebaseUtils = FirebaseUtils()
     private val permissionManager = PermissionManager()
     private var isQuestionsAsked = false
     private var mealList = mutableListOf<MealAdd>()
@@ -88,7 +79,7 @@ class ChatBotActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_bot)
-
+        sqLiteUtils = SQLiteUtils(this)
         supportActionBar?.hide()
 
 
@@ -98,15 +89,13 @@ class ChatBotActivity : AppCompatActivity() {
         sendButton = findViewById(R.id.sendButton)
         scrollView = findViewById(R.id.scrollView)
 
-        auth = FirebaseAuth.getInstance()
 
         loadQuestions()
-        checkUserLogin()
+        greetUserAndCheckData()
 
         sendButton.setOnClickListener {
             handleSendButtonClick()
         }
-        permissionManager.initPermissionLauncher(this)
 
 
         mealInputPrompt = findViewById(R.id.mealInputPrompt)
@@ -128,7 +117,7 @@ class ChatBotActivity : AppCompatActivity() {
         }
         exercisePrompt.setOnClickListener {
             handleUserInput("go to Exercise")
-            addChatMessage("Navigate to Exercise Fragment",true)
+            addChatMessage("Navigate to Exercise Fragment", true)
         }
         weightPrompt.setOnClickListener {
             handleUserInput("Open Weight Editor")
@@ -140,7 +129,7 @@ class ChatBotActivity : AppCompatActivity() {
         }
         dietPlanPrompt.setOnClickListener {
             handleUserInput("See Diet Plan")
-            addChatMessage("Navigate to Diet Plan Fragment",true)
+            addChatMessage("Navigate to Diet Plan Fragment", true)
         }
         addDataPrompt.setOnClickListener {
             handleUserInput("Handle Add Data")
@@ -148,7 +137,7 @@ class ChatBotActivity : AppCompatActivity() {
         }
         mainPrompt.setOnClickListener {
             handleUserInput("Navigate to Main Activity")
-            addChatMessage("Navigate to Main Activity",true)
+            addChatMessage("Navigate to Main Activity", true)
         }
         posturePrompt.setOnClickListener {
             handleUserInput("Navigate to Posture Detection")
@@ -167,6 +156,7 @@ class ChatBotActivity : AppCompatActivity() {
             addChatMessage("Show Step Counts", true)
         }
 
+
     }
 
     private fun loadQuestions() {
@@ -177,97 +167,29 @@ class ChatBotActivity : AppCompatActivity() {
         questions.addAll(questionsArray)
     }
 
-    private fun checkUserLogin() {
-        if (auth.currentUser == null) {
-            showLoginPrompt()
-        } else {
-            greetUserAndCheckData()
-        }
-    }
-
-    private fun showLoginPrompt() {
-        addChatMessage("Please login first.")
-        val signInButton = Button(this).apply {
-            id = R.id.sign_in_button
-            text = "Sign In with Google"
-            setOnClickListener { signIn() }
-        }
-        chatLayout.addView(signInButton)
-    }
-
-    private fun signIn() {
-        val signInIntent = firebaseUtils.getGoogleSignInClient(this).signInIntent
-        startActivityForResult(signInIntent, FirebaseUtils.RC_SIGN_IN)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == FirebaseUtils.RC_SIGN_IN) {
-            val signInAccountTask: Task<GoogleSignInAccount> =
-                GoogleSignIn.getSignedInAccountFromIntent(data)
-
-            if (signInAccountTask.isSuccessful) {
-                try {
-                    val googleSignInAccount = signInAccountTask.getResult(ApiException::class.java)
-
-                    if (googleSignInAccount != null) {
-                        val authCredential: AuthCredential = GoogleAuthProvider.getCredential(
-                            googleSignInAccount.idToken, null
-                        )
-                        firebaseUtils.auth.signInWithCredential(authCredential)
-                            .addOnCompleteListener(this) { task ->
-                                if (task.isSuccessful) {
-                                    removeSignInButton()
-                                    checkUserData()
-                                } else {
-
-                                }
-                            }
-                    }
-                } catch (e: ApiException) {
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-    private fun removeSignInButton() {
-        val signInButton = chatLayout.findViewById<Button>(R.id.sign_in_button)
-        chatLayout.removeView(signInButton)
-    }
-
-
     private fun greetUserAndCheckData() {
-        val user = auth.currentUser
-        if (user != null) {
-            val displayName = user.displayName ?: "User"
-            addChatMessage("Hello, $displayName!")
-            checkUserData()
-        }
+
+        addChatMessage("Hello")
+        checkUserData()
     }
 
 
     private fun checkUserData() {
-        val user = auth.currentUser
-        if (user != null) {
-            firebaseUtils.getUserData(user.uid).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val snapshot = task.result
-                    if (snapshot != null && snapshot.exists()) {
-                        isQuestionsAsked = true
-                        setupChatBot(snapshot)
-                        findViewById<HorizontalScrollView>(R.id.horizontalScrollView).visibility=View.VISIBLE
-                    } else {
-                        askNextQuestion()
-                    }
-                } else {
-                    addChatMessage("Error retrieving user data.")
-                }
+
+        val isDataAvailable = sqLiteUtils.isUserDataAvailable()
+        if (isDataAvailable) {
+            isQuestionsAsked = true
+            setupChatBot()
+            findViewById<HorizontalScrollView>(R.id.horizontalScrollView).visibility = View.VISIBLE
+        } else {
+            askNextQuestion()
+            lifecycleScope.launch {
+                val response = apiService.startServer()
             }
         }
     }
-    private fun setupChatBot(snapshot: DataSnapshot) {
+
+    private fun setupChatBot() {
         lifecycleScope.launch {
             delay(500)
             addChatMessage("Welcome To the App! How can I assist you with your health?")
@@ -293,7 +215,7 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun handleSendButtonClick() {
         val input = inputField.text.toString()
-        if(isQuestionsAsked){
+        if (isQuestionsAsked) {
             handleUserInput(input)
             addChatMessage(input, true)
             inputField.text.clear()
@@ -306,9 +228,9 @@ class ChatBotActivity : AppCompatActivity() {
             inputField.text.clear()
             currentQuestionIndex++
 
-            if(!isQuestionsAsked){
+            if (!isQuestionsAsked) {
                 askNextQuestion()
-            }else{
+            } else {
 
             }
 
@@ -326,13 +248,15 @@ class ChatBotActivity : AppCompatActivity() {
         hideKeyboard()
 
         inputLayout.visibility = View.GONE
-        hideKeyboard()
 
         val optionLayout = GridLayout(this).apply {
             rowCount = (options.size + 1) / 2
             columnCount = 2
             setPadding(16, 16, 16, 16)
-            layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
                 addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
             }
         }
@@ -361,10 +285,9 @@ class ChatBotActivity : AppCompatActivity() {
         }
 
         chatLayout.addView(optionLayout)
-        showInputField(InputType.TYPE_CLASS_TEXT);
+        showInputField(InputType.TYPE_CLASS_TEXT)
 
     }
-
 
 
     private fun createOptionButton(text: String, onClickListener: View.OnClickListener): Button {
@@ -385,7 +308,7 @@ class ChatBotActivity : AppCompatActivity() {
             text = message
             textSize = 16f
 
-            gravity= Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
 
             setBackgroundResource(if (isUserMessage) R.drawable.user_message_background else R.drawable.bot_message_background)
             layoutParams = LinearLayout.LayoutParams(
@@ -395,7 +318,7 @@ class ChatBotActivity : AppCompatActivity() {
                 gravity = if (isUserMessage) Gravity.END else Gravity.START
 
             }
-            (layoutParams as LinearLayout.LayoutParams).setMargins(20,20,20,20)
+            (layoutParams as LinearLayout.LayoutParams).setMargins(20, 20, 20, 20)
         }
         chatLayout.addView(messageView)
         scrollToBottom()
@@ -403,57 +326,59 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun scrollToBottom() {
         scrollView.post {
-            scrollView.scrollTo(0,scrollView.bottom)
+            scrollView.scrollTo(0, scrollView.bottom)
         }
     }
+
     private fun saveUserData() {
         val userDetails = mapOf(
-            "age" to userData[questions[0].question]!!,
-            "weight" to userData[questions[2].question]!!,
-            "height" to userData[questions[1].question]!!,
-            "gender" to userData[questions[3].question]!!,
-            "meal_preferences" to userData[questions[4].question]!!,
-            "exercise_preference" to userData[questions[5].question]!!,
-            "fitness_goals" to userData[questions[6].question]!!,
-            "sleep_schedule" to userData[questions[7].question]!!,
-            "medical_problems" to userData[questions[8].question]!!
+            "name" to userData[questions[0].question]!!,
+            "age" to userData[questions[1].question]!!,
+            "weight" to userData[questions[3].question]!!,
+            "height" to userData[questions[2].question]!!,
+            "gender" to userData[questions[4].question]!!,
+            "meal_preferences" to userData[questions[5].question]!!,
+            "exercise_preference" to userData[questions[6].question]!!,
+            "fitness_goals" to userData[questions[7].question]!!,
+            "sleep_schedule" to userData[questions[8].question]!!,
+            "medical_problems" to userData[questions[9].question]!!
         )
-        val heightInCm = convertHeightToCm(userData[questions[1].question]!!)
-        val weightInKg = userData[questions[2].question]!!.toInt()
-        val gender = if (userData[questions[3].question] == "Male") "m" else "f"
-        val mealPreference = if (userData[questions[4].question] == "Veg") "veg" else "non-veg"
-        val activityLevel = mapActivityLevel(userData[questions[5].question]!!)
-        val goal = mapFitnessGoal(userData[questions[6].question]!!)
+        val name = userData[questions[0].question]!!
+        val heightInCm = convertHeightToCm(userData[questions[2].question]!!)
+        val weightInKg = userData[questions[3].question]!!.toInt()
+        val gender = if (userData[questions[4].question] == "Male") "m" else "f"
+        val mealPreference = if (userData[questions[5].question] == "Veg") "veg" else "non-veg"
+        val activityLevel = mapActivityLevel(userData[questions[6].question]!!)
+        val goal = mapFitnessGoal(userData[questions[7].question]!!)
+        val sleepSchedule = userData[questions[8].question]!!
+        val medicalProblems = userData[questions[9].question]!!
 
-        val userData = UserHealthData(
+        val userData = UserData(
+            name = name,
             Height = heightInCm,
             Weight = weightInKg,
             Preference = mealPreference,
-            Age = userData[questions[0].question]!!.toInt(),
+            Age = userData[questions[1].question]!!.toInt(),
             Activity = activityLevel,
             Sex = gender,
-            Goal = goal
+            Goal = goal,
+            sleepSchedule = sleepSchedule,
+            medicalProblems = medicalProblems,
         )
         makeApiCall(userData)
 
-        firebaseUtils.saveUserData(auth.currentUser!!.uid, userDetails)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    addChatMessage("Details saved!")
-                    calculateBMI()
-                } else {
-                    addChatMessage("Error saving details. Please try again.")
-                }
-            }
+        sqLiteUtils.saveUserData(userData)
+
     }
 
-    private fun makeApiCall(userData: UserHealthData) {
+    private fun makeApiCall(userData: UserData) {
         lifecycleScope.launch {
             val response = apiService.generateDietPlan(userData)
-            if(response.isSuccessful){
+            if (response.isSuccessful) {
                 Log.d("response", response.body()!!.toString())
-                firebaseUtils.saveDietPlan(response.body()!!)
+                sqLiteUtils.saveDietPlan(response.body()!!)
                 addChatMessage("Diet Plan Generated Successfully")
+                navigateToMainActivity()
             }
         }
     }
@@ -498,7 +423,10 @@ class ChatBotActivity : AppCompatActivity() {
             else -> "m"
         }
     }
+
     private fun askHeightPreference() {
+        hideKeyboard()
+
         inputLayout.visibility = View.GONE
 
         val buttonLayout = LinearLayout(this).apply {
@@ -539,7 +467,6 @@ class ChatBotActivity : AppCompatActivity() {
         buttonLayout.addView(cmButton)
         chatLayout.addView(buttonLayout)
     }
-
 
 
     private fun addHeightInputFields() {
@@ -604,6 +531,7 @@ class ChatBotActivity : AppCompatActivity() {
         chatLayout.addView(buttonLayout)
 
     }
+
     private fun createButton(text: String, onClickListener: View.OnClickListener): Button {
         return Button(this).apply {
             this.text = text
@@ -651,9 +579,30 @@ class ChatBotActivity : AppCompatActivity() {
                 userInput.contains("lunch", ignoreCase = true) -> showMealInput()
                 userInput.contains("dinner", ignoreCase = true) -> showMealInput()
                 userInput.contains("meal", ignoreCase = true) -> showMealInput()
-                (userInput.contains("exercise", ignoreCase = true) || userInput.contains("exercises", ignoreCase = true)) && userInput.contains("add", ignoreCase = true) || userInput.contains("exercise data", ignoreCase = true)-> showExerciseInput()
-                userInput.contains("do exercise", ignoreCase = true) || userInput.contains("go to exercise", ignoreCase = true) || userInput.contains("want", ignoreCase = true) -> navigateToExerciseFragment()
-                userInput.contains("weight", ignoreCase = true) && (userInput.contains("add", ignoreCase = true) || userInput.contains("data", ignoreCase = true)) -> openWeightEditor()
+                (userInput.contains(
+                    "exercise",
+                    ignoreCase = true
+                ) || userInput.contains(
+                    "exercises",
+                    ignoreCase = true
+                )) && userInput.contains(
+                    "add",
+                    ignoreCase = true
+                ) || userInput.contains("exercise data", ignoreCase = true) -> showExerciseInput()
+
+                userInput.contains(
+                    "do exercise",
+                    ignoreCase = true
+                ) || userInput.contains(
+                    "go to exercise",
+                    ignoreCase = true
+                ) || userInput.contains("want", ignoreCase = true) -> navigateToExerciseFragment()
+
+                userInput.contains("weight", ignoreCase = true) && (userInput.contains(
+                    "add",
+                    ignoreCase = true
+                ) || userInput.contains("data", ignoreCase = true)) -> openWeightEditor()
+
                 userInput.contains("blood sugar", ignoreCase = true) -> openGlucoseEditor()
                 userInput.contains("diet plan", ignoreCase = true) -> navigateToDietPlanFragment()
                 userInput.contains("add data", ignoreCase = true) -> handleAddData()
@@ -673,10 +622,12 @@ class ChatBotActivity : AppCompatActivity() {
         val intent = Intent(this, CalorieStatisticsActivity::class.java)
         startActivity(intent)
     }
+
     private fun navigateToSteps() {
         val intent = Intent(this, StepCountStatisticsActivity::class.java)
         startActivity(intent)
     }
+
     private fun navigateToWeight() {
         val intent = Intent(this, WeightStatisticsActivity::class.java)
         startActivity(intent)
@@ -684,10 +635,12 @@ class ChatBotActivity : AppCompatActivity() {
 
 
     private fun handleAddData() {
-        addChatMessage("Which Data You want to Add like\n Exercise Data\n" +
-                "Meal Data\n" +
-                " Weight\n" +
-                "Blood Sugar Level")
+        addChatMessage(
+            "Which Data You want to Add like\n Exercise Data\n" +
+                    "Meal Data\n" +
+                    " Weight\n" +
+                    "Blood Sugar Level"
+        )
     }
 
 
@@ -700,12 +653,13 @@ class ChatBotActivity : AppCompatActivity() {
         val saveMealButton: Button = mealInputLayout.findViewById(R.id.saveBtn)
 
         mealRecyclerView.layoutManager = LinearLayoutManager(this)
-        val mealAddAdapter = MealAddAdapter(mealList, object : MealAddAdapter.OnDeleteClickListener {
-            override fun onDeleteClick(position: Int, type: String) {
-                mealList.removeAt(position)
-                mealAddAdapter.notifyItemRemoved(position)
-            }
-        })
+        val mealAddAdapter =
+            MealAddAdapter(mealList, object : MealAddAdapter.OnDeleteClickListener {
+                override fun onDeleteClick(position: Int, type: String) {
+                    mealList.removeAt(position)
+                    mealAddAdapter.notifyItemRemoved(position)
+                }
+            })
         mealRecyclerView.adapter = mealAddAdapter
 
         addMealButton.setOnClickListener {
@@ -722,37 +676,58 @@ class ChatBotActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.chatLayout).addView(mealInputLayout)
     }
 
-    private fun calculateMealCalories() {
-        val meals = mealList.map { Item(it.dishName, it.quantity) }
+    private fun calculateMealCalories()  {
+        val meals = mealList.map { "${it.dishName}:${it.quantity}" }.joinToString(";")
+        val mealData = mealList.map { Item(it.dishName, it.quantity) }
+
         lifecycleScope.launch {
-            val responseMeal =  apiService.calculateCalories(meals)
+            val responseMealDeferred = async { apiService.calculateCalories(mealData) }
+            val responseMeal = responseMealDeferred.await()
 
             if (responseMeal.isSuccessful) {
                 val totalCalories = responseMeal.body()?.total_calories?.toInt() ?: 0
-                firebaseUtils.addOrUpdateHealthData(
-                    null, mealList, null, totalCalories, null, null, null,
-                    onSuccess = { },
-                    onFailure = { e ->  Log.e("Error", e.message.toString()) }
+                Toast.makeText(this@ChatBotActivity, "Meal added successfully", Toast.LENGTH_SHORT).show()
+
+                sqLiteUtils.addOrUpdateHealthData(
+                    null,
+                    mealList,
+                    0,
+                    totalCalories,
+                    0,
+                    0.0f,
+                    0.0f,
+                    onSuccess = {
+                        mealList.clear()
+                        mealList.add(MealAdd())
+                        mealAddAdapter.notifyDataSetChanged()
+                    },
+                    onFailure = { error ->
+                        Log.e("MealActivity", "Error adding meal to database", error)
+                        Toast.makeText(this@ChatBotActivity, "Failed to add meal", Toast.LENGTH_SHORT).show()
+                    }
                 )
+            } else {
+                Toast.makeText(this@ChatBotActivity, "Failed to calculate calories", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
     private fun showExerciseInput() {
         exerciseList.add(ExerciseAdd())
 
         val exerciseInputLayout = layoutInflater.inflate(R.layout.exercise_input_layout, null)
-        val exerciseRecyclerView: RecyclerView = exerciseInputLayout.findViewById(R.id.exercise_recycler_view)
+        val exerciseRecyclerView: RecyclerView =
+            exerciseInputLayout.findViewById(R.id.exercise_recycler_view)
         val addExerciseButton: Button = exerciseInputLayout.findViewById(R.id.iv_add_exercise)
         val saveExerciseButton: Button = exerciseInputLayout.findViewById(R.id.saveBtn)
 
         exerciseRecyclerView.layoutManager = LinearLayoutManager(this)
-        val exerciseAddAdapter = ExerciseAddAdapter(exerciseList, object : ExerciseAddAdapter.OnDeleteClickListener {
-            override fun onDeleteClick(position: Int, type: String) {
-                exerciseList.removeAt(position)
-                exerciseAddAdapter.notifyItemRemoved(position)
-            }
-        })
+        val exerciseAddAdapter =
+            ExerciseAddAdapter(exerciseList, object : ExerciseAddAdapter.OnDeleteClickListener {
+                override fun onDeleteClick(position: Int, type: String) {
+                    exerciseList.removeAt(position)
+                    exerciseAddAdapter.notifyItemRemoved(position)
+                }
+            })
         exerciseRecyclerView.adapter = exerciseAddAdapter
 
         addExerciseButton.setOnClickListener {
@@ -771,16 +746,16 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun saveExerciseData() {
         lifecycleScope.launch {
-            val exercises = exerciseList.map { exerItem(it.exerciseName, it.duration) }
             var totalCalories = 0
-            exercises.forEach { exercise ->
+            val exercises = exerciseList.map { "${it.exerciseName}:${it.duration}" }.joinToString(";")
+            val exercisesData = exerciseList.map {  exerItem(it.exerciseName, it.duration) }
+
+            exercisesData.forEach { exercise ->
                 try {
                     val response = apiService.calculateCaloriesBurn(exercise)
-
                     if (response.isSuccessful) {
                         val caloriesForExercise = response.body()?.calories_burnt?.toInt() ?: 0
                         totalCalories += caloriesForExercise
-                        Log.d("response", caloriesForExercise.toString())
                     } else {
                         Log.e("Error", "Failed to calculate calories for ${exercise.exercise_name}")
                     }
@@ -788,11 +763,27 @@ class ChatBotActivity : AppCompatActivity() {
                     Log.e("Error", "Exception occurred: ${e.message}")
                 }
             }
+
             Log.d("response", "Total calories burned: $totalCalories")
-            firebaseUtils.addOrUpdateHealthData(
-                exerciseList, null, null, null, totalCalories, null, null,
-                onSuccess = { },
-                onFailure = { e -> Log.e("Error", e.message.toString()) }
+
+            sqLiteUtils.addOrUpdateHealthData(
+                exerciseList,
+                null,
+                null,
+                null,
+                totalCalories,
+                null,
+                null,
+                onSuccess = {
+                    showToast("Exercises added successfully")
+                    exerciseList.clear()
+                    exerciseList.add(ExerciseAdd())
+                    exerciseAddAdapter.notifyDataSetChanged()
+                },
+                onFailure = { e ->
+                    Log.e("Error", "Failed to add exercise to database", e)
+                    showToast("Failed to add exercises")
+                }
             )
         }
     }
@@ -803,6 +794,7 @@ class ChatBotActivity : AppCompatActivity() {
         intent.putExtra("SHOW_DIET_PLAN_FRAGMENT", true)
         startActivity(intent)
     }
+
     private fun navigateToPostureActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("POSTURE_FRAGMENT", true)
@@ -833,16 +825,23 @@ class ChatBotActivity : AppCompatActivity() {
             setPositiveButton("Save") { _, _ ->
                 val weight = editText.text.toString().toFloat()
 
-                if (weight!=0.0f) {
-                    firebaseUtils.addOrUpdateHealthData(emptyList(), emptyList(), 0, 0, 0,weight, 0.0f,
+                if (weight != 0.0f) {
+                    sqLiteUtils.addOrUpdateHealthData(emptyList(),
+                        emptyList(),
+                        0,
+                        0,
+                        0,
+                        weight,
+                        0.0f,
                         onSuccess = {
                             showToast("Weight Level Successully")
-                        }, onFailure = {
+                        },
+                        onFailure = {
                             showToast("Error in adding Weight")
                         })
 
                 } else {
-                    showToast( "Weight cannot be empty")
+                    showToast("Weight cannot be empty")
                 }
             }
             setNegativeButton("Cancel") { dialog, which ->
@@ -863,12 +862,21 @@ class ChatBotActivity : AppCompatActivity() {
             setView(dialogLayout)
             setPositiveButton("Save") { _, _ ->
                 val glucose = editText.text.toString().toFloat()
-                if (glucose!=0.0f) {
-                    firebaseUtils.addOrUpdateHealthData(emptyList(), emptyList(), 0, 0, 0,0.0f, glucose , onSuccess = {
-                        showToast("Glucose Level Added Successully")
-                    }, onFailure = {
-                        showToast("Error adding glucose level")
-                    })
+                if (glucose != 0.0f) {
+                    sqLiteUtils.addOrUpdateHealthData(
+                        emptyList(),
+                        emptyList(),
+                        0,
+                        0,
+                        0,
+                        0.0f,
+                        glucose,
+                        onSuccess = {
+                            showToast("Glucose Level Added Successully")
+                        },
+                        onFailure = {
+                            showToast("Error adding glucose level")
+                        })
                 } else {
                     showToast("Glucose level cannot be empty")
                 }
@@ -881,7 +889,6 @@ class ChatBotActivity : AppCompatActivity() {
     }
 
 
-
     private suspend fun handleFallback(userInput: String) {
         val response = generativeModel.generateContent(userInput)
         addChatMessage(response.text.toString())
@@ -889,11 +896,8 @@ class ChatBotActivity : AppCompatActivity() {
 
 
     private fun showToast(s: String) {
-        Toast.makeText(this, s , Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
 
     }
-
-
-
 }
 

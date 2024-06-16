@@ -1,54 +1,53 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.health.connect.HealthPermissions
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.registerForActivityResult
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
-import androidx.health.connect.client.records.WeightRecord
-import androidx.health.platform.client.permission.Permission
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.databinding.ActivityMainBinding
-import com.aman.fityatraapp.ui.DietPlannerFragment
-import com.aman.fityatraapp.ui.exercise.ExerciseFragment
+import com.aman.fityatraapp.services.StepTrackingService
+import com.aman.fityatraapp.utils.ApiClient.apiService
 import com.aman.fityatraapp.utils.HealthConnectManager
+import com.aman.fityatraapp.utils.PermissionManager
+import com.aman.fityatraapp.utils.SQLiteUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PermissionManager.PermissionCallback {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var healthConnectManager: HealthConnectManager
+    private lateinit var sqLiteUtils: SQLiteUtils
+    private lateinit var permissionManager:PermissionManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        permissionManager = PermissionManager()
+        permissionManager.initPermissionLauncher(this, this)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.hide()
+        sqLiteUtils = SQLiteUtils(this)
+        val isDataAvailable = sqLiteUtils.isUserDataAvailable()
+
+
+
+        if (!isDataAvailable) {
+            val intent = Intent(this, ChatBotActivity::class.java)
+            startActivity(intent)
+        }
 
         healthConnectManager = HealthConnectManager(this)
-        healthConnectManager.registerPermissionRequestLauncher(requestPermissionLauncher)
-
         lifecycleScope.launch {
-            healthConnectManager.fetchHealthData()
+            val response = apiService.startServer()
+//            healthConnectManager.checkPermissionsAndRun()
         }
 
         val navView: BottomNavigationView = binding.navView
@@ -111,33 +110,17 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.navigation_diet)
                     true
                 }
-                // Add cases for other bottom tabs if needed
+
                 else -> false
             }
         }
 
-        val availability = HealthConnectClient.sdkStatus(this)
-        if (availability==1 || availability==2){
-            Toast.makeText(this, "Download Health connect App to integrate", Toast.LENGTH_SHORT).show()
-        }else{
-            Toast.makeText(this, "Health connect App integrated", Toast.LENGTH_SHORT).show()
-        }
 
     }
+    override fun onPermissionsGranted() {
+        startService(Intent(this, StepTrackingService::class.java))
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            if (permissions.all { it.value }) {
-                // Permissions granted
-                lifecycleScope.launch {
-                    healthConnectManager.fetchHealthData()
-                }
-            } else {
-                // Handle the case where permissions are not granted
-                Log.e("MainActivity", "Permissions not granted")
-            }
-        }
-
+    }
 
 
 }

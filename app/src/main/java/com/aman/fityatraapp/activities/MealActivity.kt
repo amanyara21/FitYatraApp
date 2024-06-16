@@ -1,4 +1,4 @@
-package com.aman.fityatraapp
+package com.aman.fityatraapp.activities
 
 
 import android.os.Bundle
@@ -10,17 +10,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aman.fityatraapp.R
 import com.aman.fityatraapp.models.MealAdd
 import com.aman.fityatraapp.utils.ApiClient.apiService
-import com.aman.fityatraapp.utils.ExerciseAddAdapter
-import com.aman.fityatraapp.utils.FirebaseUtils
-import com.aman.fityatraapp.utils.Item
+import com.aman.fityatraapp.models.Item
 import com.aman.fityatraapp.utils.MealAddAdapter
-import com.aman.fityatraapp.utils.exerItem
-
+import com.aman.fityatraapp.utils.SQLiteUtils
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-
 
 
 class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
@@ -30,7 +27,7 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
     private var mealList = mutableListOf<MealAdd>()
     private lateinit var saveBtn: Button
     private lateinit var title: TextView
-    private var firebaseUtils = FirebaseUtils()
+    private var sqLiteUtils: SQLiteUtils? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,34 +53,48 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
         saveBtn.setOnClickListener {
             calculateCalories()
         }
+
+        sqLiteUtils = SQLiteUtils(this)
     }
 
     private fun calculateCalories() {
-        val meals = mealList.map { Item(it.dishName, it.quantity) }
-        Log.d("meals", meals.toString())
+        val meals = mealList.map { "${it.dishName}:${it.quantity}" }.joinToString(";")
+        val mealData = mealList.map { Item(it.dishName, it.quantity) }
 
         lifecycleScope.launch {
-            val responseMealDeferred = async { apiService.calculateCalories(meals) }
+            val responseMealDeferred = async { apiService.calculateCalories(mealData) }
             val responseMeal = responseMealDeferred.await()
 
             if (responseMeal.isSuccessful) {
                 val totalCalories = responseMeal.body()?.total_calories?.toInt() ?: 0
-                Toast.makeText(this@MealActivity, "Meal Added successfully", Toast.LENGTH_SHORT).show()
-                firebaseUtils.addOrUpdateHealthData(null, mealList, 0, totalCalories, 0,0.0f,0.0f, onSuccess = {}, onFailure = {})
-                mealList.clear()
-                mealList.add(MealAdd())
-                mealAddAdapter.notifyDataSetChanged()
+                Toast.makeText(this@MealActivity, "Meal added successfully", Toast.LENGTH_SHORT).show()
 
+                sqLiteUtils?.addOrUpdateHealthData(
+                    null,
+                    mealList,
+                    0,
+                    totalCalories,
+                    0,
+                    0.0f,
+                    0.0f,
+                    onSuccess = {
+                        mealList.clear()
+                        mealList.add(MealAdd())
+                        mealAddAdapter.notifyDataSetChanged()
+                    },
+                    onFailure = { error ->
+                        Log.e("MealActivity", "Error adding meal to database", error)
+                        Toast.makeText(this@MealActivity, "Failed to add meal", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                Toast.makeText(this@MealActivity, "Failed to calculate calories", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
 
     override fun onDeleteClick(position: Int, type: String) {
         mealList.removeAt(position)
         mealAddAdapter.notifyItemRemoved(position)
     }
-
-
 }
-

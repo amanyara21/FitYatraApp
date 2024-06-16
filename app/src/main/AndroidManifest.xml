@@ -23,12 +23,17 @@
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
     <meta-data
-        android:name="com.google.health.FIt_YATRA"
+        android:name="com.google.android.health.connect"
         android:value="@string/app_name" />
 
 
@@ -43,26 +48,35 @@
         android:theme="@style/Theme.FitYatraApp"
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
+        <service android:name=".services.StepTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="health"/>
         <activity
-            android:name=".DiabetesStatisticsActivity"
+            android:name=".activities.DiabetesStatisticsActivity"
             android:exported="false" />
         <activity
-            android:name=".StepCountStatisticsActivity"
+            android:name=".activities.StepCountStatisticsActivity"
             android:exported="false" />
         <activity
-            android:name=".CalorieStatisticsActivity"
+            android:name=".activities.CalorieStatisticsActivity"
             android:exported="false" />
         <activity
-            android:name=".WeightStatisticsActivity"
+            android:name=".activities.WeightStatisticsActivity"
             android:exported="false" />
         <activity
-            android:name=".ExerciseAddActivity"
+            android:name=".activities.ExerciseAddActivity"
             android:exported="false" />
         <activity
-            android:name=".MealActivity"
+            android:name=".activities.MealActivity"
             android:exported="false" />
         <activity
-            android:name=".ChatBotActivity"
+            android:name=".activities.ChatBotActivity"
+            android:exported="false">
+
+        </activity>
+        <activity
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -71,24 +85,24 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.ExerciseDescriptionActivity"
             android:exported="false" />
         <activity
-            android:name=".ExerciseDescriptionActivity"
+            android:name=".activities.ActivitiesDescriptionActivity"
             android:exported="false" />
         <activity
-            android:name=".ActivitiesDescriptionActivity"
+            android:name=".activities.CameraActivity"
             android:exported="false" />
+
         <activity
-            android:name=".CameraActivity"
-            android:exported="false" />
-        <activity
+            android:name=".activities.PrivacyPolicyActiviity"
             android:exported="true"
-            android:name=".PrivacyPolicyActiviity">
+            android:targetActivity=".PrivacyPolicyActiviity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
             <intent-filter>
-                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
-            <meta-data android:name="health_permissions" android:resource="@array/health_permissions" />
         </activity>
 
     </application>
