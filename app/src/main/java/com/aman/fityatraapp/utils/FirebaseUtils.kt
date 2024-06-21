@@ -1,6 +1,7 @@
 package com.aman.fityatraapp.utils
 
 
+import android.util.Log
 import com.aman.fityatraapp.models.Activities
 import com.aman.fityatraapp.models.Exercise
 import com.google.firebase.database.DataSnapshot
@@ -11,6 +12,7 @@ import com.google.firebase.database.ValueEventListener
 
 class FirebaseUtils {
 
+    
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
     fun getAllExercises(callback: (List<Exercise>) -> Unit) {
         val database: DatabaseReference = database.child("Exercises")
@@ -22,6 +24,7 @@ class FirebaseUtils {
                     val name = exerciseSnapshot.key ?: ""
                     val exercise =
                         exerciseSnapshot.getValue(Exercise::class.java)?.copy(name = name)
+                    Log.d("exercisesList", exercise.toString())
                     if (exercise != null) {
                         exercisesList.add(exercise)
                     }
@@ -42,8 +45,10 @@ class FirebaseUtils {
         val exerciseListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val exercise = dataSnapshot.getValue(Exercise::class.java)?.copy(name = name)
+
                 callback(exercise)
             }
+
 
             override fun onCancelled(databaseError: DatabaseError) {
                 println("getExerciseByName:onCancelled: ${databaseError.toException()}")

@@ -310,7 +310,7 @@ class SQLiteUtils(context: Context) :
 
 
 
-    private fun getStartOfTodayInMillis(): Long {
+    fun getStartOfTodayInMillis(): Long {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -726,7 +726,7 @@ class SQLiteUtils(context: Context) :
                     name = getColumnValue(cursor, COLUMN_NAME) { getString(it) } ?: "",
                     Age = getColumnValue(cursor, COLUMN_AGE) { getInt(it) } ?: 0,
                     Height = getColumnValue(cursor, COLUMN_HEIGHT) { getInt(it) } ?: 0,
-                    Weight = getColumnValue(cursor, COLUMN_WEIGHT) { getInt(it) } ?: 0,
+                    Weight = getColumnValue(cursor, COLUMN_WEIGHT) { getFloat(it) } ?: 0.0f,
                     Sex = getColumnValue(cursor, COLUMN_GENDER) { getString(it) } ?: "",
                     Preference = getColumnValue(cursor, COLUMN_MEAL_PREFERENCES) { getString(it) }
                         ?: "",

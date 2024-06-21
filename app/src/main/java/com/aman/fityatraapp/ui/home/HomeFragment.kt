@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.aman.fityatraapp.activities.CalorieStatisticsActivity
 import com.aman.fityatraapp.R
+import com.aman.fityatraapp.activities.MealExerciseListActivity
 import com.aman.fityatraapp.activities.StepCountStatisticsActivity
 import com.aman.fityatraapp.databinding.FragmentHomeBinding
 import com.aman.fityatraapp.models.Goal
@@ -46,7 +47,9 @@ class HomeFragment : Fragment() {
         binding.gotoExercises.setOnClickListener {
             navigateToExerciseFragment()
         }
-
+        binding.latestExerciseCard.setOnClickListener{
+            navigateToMealExerciseActivity()
+        }
         binding.progressRelativeLayout.setOnClickListener {
             navigateToStepCountStatistics()
         }
@@ -65,9 +68,10 @@ class HomeFragment : Fragment() {
         viewModel.getExercises()
     }
 
+
+
     private fun observeViewModel() {
         viewModel.userData.observe(viewLifecycleOwner) { user ->
-            Log.d("user", user.toString())
             user?.let {
                 binding.nameTextView.text = "${it.name}!✌️"
             }
@@ -140,6 +144,10 @@ class HomeFragment : Fragment() {
 
     private fun navigateToCalorieStatistics() {
         val intent = Intent(requireContext(), CalorieStatisticsActivity::class.java)
+        startActivity(intent)
+    }
+    private fun navigateToMealExerciseActivity() {
+        val intent = Intent(requireContext(), MealExerciseListActivity::class.java)
         startActivity(intent)
     }
 }

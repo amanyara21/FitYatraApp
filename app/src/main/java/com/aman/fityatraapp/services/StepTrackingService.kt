@@ -106,7 +106,7 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun makeApiCallForStepCount() {
-        sqlUtils.addOrUpdateHealthData(null, null, stepCount, 0, 0, 0.0f, 0.0f, onSuccess = {
+        sqlUtils.addOrUpdateHealthData(null, null, stepCount, 0, 0, null, null, onSuccess = {
             stepCount = 0
             lowAccuracyStepCount = 0
             highAccuracyStepCount = 0

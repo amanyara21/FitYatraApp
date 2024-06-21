@@ -75,8 +75,8 @@ class MealActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener {
                     0,
                     totalCalories,
                     0,
-                    0.0f,
-                    0.0f,
+                    null,
+                    null,
                     onSuccess = {
                         mealList.clear()
                         mealList.add(MealAdd())

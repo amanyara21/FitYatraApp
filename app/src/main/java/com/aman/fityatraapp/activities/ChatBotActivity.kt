@@ -18,20 +18,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.aman.fityatraapp.R
 import com.aman.fityatraapp.models.ExerciseAdd
+import com.aman.fityatraapp.models.HealthData
 import com.aman.fityatraapp.models.MealAdd
 import com.aman.fityatraapp.models.UserData
 import com.aman.fityatraapp.utils.ApiClient.apiService
 import com.aman.fityatraapp.utils.ExerciseAddAdapter
 import com.aman.fityatraapp.models.Item
 import com.aman.fityatraapp.utils.MealAddAdapter
-import com.aman.fityatraapp.utils.PermissionManager
 import com.aman.fityatraapp.utils.SQLiteUtils
 import com.aman.fityatraapp.models.exerItem
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
 
@@ -41,7 +43,7 @@ data class Question(
     val options: List<String>? = null
 )
 
-class ChatBotActivity : AppCompatActivity() {
+class ChatBotActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListener, ExerciseAddAdapter.OnDeleteClickListener {
     private lateinit var sqLiteUtils: SQLiteUtils
     private lateinit var chatLayout: LinearLayout
     private lateinit var inputLayout: LinearLayout
@@ -51,7 +53,6 @@ class ChatBotActivity : AppCompatActivity() {
     private var currentQuestionIndex = 0
     private val questions = mutableListOf<Question>()
     private val userData = mutableMapOf<String, String>()
-    private val permissionManager = PermissionManager()
     private var isQuestionsAsked = false
     private var mealList = mutableListOf<MealAdd>()
     private var exerciseList = mutableListOf<ExerciseAdd>()
@@ -69,6 +70,10 @@ class ChatBotActivity : AppCompatActivity() {
     private lateinit var weightStatPrompt: TextView
     private lateinit var stepStatPrompt: TextView
 
+    private var healthData: HealthData? = null
+    private var savedUserData: UserData? = null
+    private var last7daysData: List<HealthData>? = null
+
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-pro",
@@ -82,6 +87,9 @@ class ChatBotActivity : AppCompatActivity() {
         sqLiteUtils = SQLiteUtils(this)
         supportActionBar?.hide()
 
+        lifecycleScope.launch {
+            val response = apiService.startServer()
+        }
 
         chatLayout = findViewById(R.id.chatLayout)
         inputLayout = findViewById(R.id.inputLayout)
@@ -168,7 +176,6 @@ class ChatBotActivity : AppCompatActivity() {
     }
 
     private fun greetUserAndCheckData() {
-
         addChatMessage("Hello")
         checkUserData()
     }
@@ -183,15 +190,13 @@ class ChatBotActivity : AppCompatActivity() {
             findViewById<HorizontalScrollView>(R.id.horizontalScrollView).visibility = View.VISIBLE
         } else {
             askNextQuestion()
-            lifecycleScope.launch {
-                val response = apiService.startServer()
-            }
         }
     }
 
     private fun setupChatBot() {
         lifecycleScope.launch {
             delay(500)
+            showInputField(InputType.TYPE_CLASS_TEXT)
             addChatMessage("Welcome To the App! How can I assist you with your health?")
         }
     }
@@ -202,7 +207,7 @@ class ChatBotActivity : AppCompatActivity() {
             val question = questions[currentQuestionIndex]
             addChatMessage(question.question)
             when (question.type) {
-                "number" -> showInputField(InputType.TYPE_CLASS_NUMBER)
+                "number" -> showInputField(InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
                 "height" -> askHeightPreference()
                 "dropdown" -> showOptionButtons(question.options!!)
                 "text" -> showInputField(InputType.TYPE_CLASS_TEXT)
@@ -325,33 +330,25 @@ class ChatBotActivity : AppCompatActivity() {
     }
 
     private fun scrollToBottom() {
+//        scrollView.post {
+//            scrollView.scrollTo(0, scrollView.scrollY)
+//        }
         scrollView.post {
-            scrollView.scrollTo(0, scrollView.bottom)
+            scrollView.fullScroll(View.FOCUS_DOWN)
         }
     }
 
     private fun saveUserData() {
-        val userDetails = mapOf(
-            "name" to userData[questions[0].question]!!,
-            "age" to userData[questions[1].question]!!,
-            "weight" to userData[questions[3].question]!!,
-            "height" to userData[questions[2].question]!!,
-            "gender" to userData[questions[4].question]!!,
-            "meal_preferences" to userData[questions[5].question]!!,
-            "exercise_preference" to userData[questions[6].question]!!,
-            "fitness_goals" to userData[questions[7].question]!!,
-            "sleep_schedule" to userData[questions[8].question]!!,
-            "medical_problems" to userData[questions[9].question]!!
-        )
         val name = userData[questions[0].question]!!
         val heightInCm = convertHeightToCm(userData[questions[2].question]!!)
-        val weightInKg = userData[questions[3].question]!!.toInt()
+        val weightInKg = userData[questions[3].question]!!.toFloat()
         val gender = if (userData[questions[4].question] == "Male") "m" else "f"
         val mealPreference = if (userData[questions[5].question] == "Veg") "veg" else "non-veg"
         val activityLevel = mapActivityLevel(userData[questions[6].question]!!)
         val goal = mapFitnessGoal(userData[questions[7].question]!!)
         val sleepSchedule = userData[questions[8].question]!!
         val medicalProblems = userData[questions[9].question]!!
+        val HbA1c = userData[questions[10].question]!!.toFloat()
 
         val userData = UserData(
             name = name,
@@ -364,10 +361,15 @@ class ChatBotActivity : AppCompatActivity() {
             Goal = goal,
             sleepSchedule = sleepSchedule,
             medicalProblems = medicalProblems,
+            HbA1c = HbA1c
         )
-        makeApiCall(userData)
 
+
+        makeApiCall(userData)
+        addChatMessage("Diet Plan Generated Successfully")
         sqLiteUtils.saveUserData(userData)
+        sqLiteUtils.addOrUpdateHealthData(emptyList(), emptyList(), 0,0, 0, weight = weightInKg, glucoseLevel = HbA1c, onSuccess = {}, onFailure = {})
+        updateHealthData()
 
     }
 
@@ -375,10 +377,7 @@ class ChatBotActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val response = apiService.generateDietPlan(userData)
             if (response.isSuccessful) {
-                Log.d("response", response.body()!!.toString())
                 sqLiteUtils.saveDietPlan(response.body()!!)
-                addChatMessage("Diet Plan Generated Successfully")
-                navigateToMainActivity()
             }
         }
     }
@@ -578,7 +577,7 @@ class ChatBotActivity : AppCompatActivity() {
                 userInput.contains("breakfast", ignoreCase = true) -> showMealInput()
                 userInput.contains("lunch", ignoreCase = true) -> showMealInput()
                 userInput.contains("dinner", ignoreCase = true) -> showMealInput()
-                userInput.contains("meal", ignoreCase = true) -> showMealInput()
+                (userInput.contains("meal", ignoreCase = true) && (userInput.contains("add", ignoreCase = true) || userInput.contains("input", ignoreCase = true))) -> showMealInput()
                 (userInput.contains(
                     "exercise",
                     ignoreCase = true
@@ -596,12 +595,13 @@ class ChatBotActivity : AppCompatActivity() {
                 ) || userInput.contains(
                     "go to exercise",
                     ignoreCase = true
-                ) || userInput.contains("want", ignoreCase = true) -> navigateToExerciseFragment()
+                )  -> navigateToExerciseFragment()
 
                 userInput.contains("weight", ignoreCase = true) && (userInput.contains(
                     "add",
                     ignoreCase = true
-                ) || userInput.contains("data", ignoreCase = true)) -> openWeightEditor()
+                ) || userInput.contains("data", ignoreCase = true) ||
+                        userInput.contains("open", ignoreCase = true)) -> openWeightEditor()
 
                 userInput.contains("blood sugar", ignoreCase = true) -> openGlucoseEditor()
                 userInput.contains("diet plan", ignoreCase = true) -> navigateToDietPlanFragment()
@@ -614,7 +614,9 @@ class ChatBotActivity : AppCompatActivity() {
                 else -> {
                     handleFallback(userInput)
                 }
+
             }
+            scrollToBottom()
         }
     }
 
@@ -653,19 +655,14 @@ class ChatBotActivity : AppCompatActivity() {
         val saveMealButton: Button = mealInputLayout.findViewById(R.id.saveBtn)
 
         mealRecyclerView.layoutManager = LinearLayoutManager(this)
-        val mealAddAdapter =
-            MealAddAdapter(mealList, object : MealAddAdapter.OnDeleteClickListener {
-                override fun onDeleteClick(position: Int, type: String) {
-                    mealList.removeAt(position)
-                    mealAddAdapter.notifyItemRemoved(position)
-                }
-            })
+        mealAddAdapter = MealAddAdapter(mealList, this)
         mealRecyclerView.adapter = mealAddAdapter
 
         addMealButton.setOnClickListener {
             mealList.add(MealAdd())
             mealAddAdapter.notifyItemInserted(mealList.size - 1)
         }
+
 
         saveMealButton.setOnClickListener {
             calculateMealCalories()
@@ -677,7 +674,6 @@ class ChatBotActivity : AppCompatActivity() {
     }
 
     private fun calculateMealCalories()  {
-        val meals = mealList.map { "${it.dishName}:${it.quantity}" }.joinToString(";")
         val mealData = mealList.map { Item(it.dishName, it.quantity) }
 
         lifecycleScope.launch {
@@ -694,23 +690,28 @@ class ChatBotActivity : AppCompatActivity() {
                     0,
                     totalCalories,
                     0,
-                    0.0f,
-                    0.0f,
+                    null,
+                    null,
                     onSuccess = {
                         mealList.clear()
                         mealList.add(MealAdd())
-                        mealAddAdapter.notifyDataSetChanged()
                     },
                     onFailure = { error ->
                         Log.e("MealActivity", "Error adding meal to database", error)
-                        Toast.makeText(this@ChatBotActivity, "Failed to add meal", Toast.LENGTH_SHORT).show()
                     }
                 )
+                updateHealthData()
             } else {
-                Toast.makeText(this@ChatBotActivity, "Failed to calculate calories", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun updateHealthData() {
+        sqLiteUtils.getTodayHealthData(onSuccess = {data->
+            healthData=data
+        }, onFailure = {})
+    }
+
     private fun showExerciseInput() {
         exerciseList.add(ExerciseAdd())
 
@@ -721,13 +722,7 @@ class ChatBotActivity : AppCompatActivity() {
         val saveExerciseButton: Button = exerciseInputLayout.findViewById(R.id.saveBtn)
 
         exerciseRecyclerView.layoutManager = LinearLayoutManager(this)
-        val exerciseAddAdapter =
-            ExerciseAddAdapter(exerciseList, object : ExerciseAddAdapter.OnDeleteClickListener {
-                override fun onDeleteClick(position: Int, type: String) {
-                    exerciseList.removeAt(position)
-                    exerciseAddAdapter.notifyItemRemoved(position)
-                }
-            })
+        exerciseAddAdapter = ExerciseAddAdapter(exerciseList, this)
         exerciseRecyclerView.adapter = exerciseAddAdapter
 
         addExerciseButton.setOnClickListener {
@@ -747,7 +742,6 @@ class ChatBotActivity : AppCompatActivity() {
     private fun saveExerciseData() {
         lifecycleScope.launch {
             var totalCalories = 0
-            val exercises = exerciseList.map { "${it.exerciseName}:${it.duration}" }.joinToString(";")
             val exercisesData = exerciseList.map {  exerItem(it.exerciseName, it.duration) }
 
             exercisesData.forEach { exercise ->
@@ -763,8 +757,6 @@ class ChatBotActivity : AppCompatActivity() {
                     Log.e("Error", "Exception occurred: ${e.message}")
                 }
             }
-
-            Log.d("response", "Total calories burned: $totalCalories")
 
             sqLiteUtils.addOrUpdateHealthData(
                 exerciseList,
@@ -785,6 +777,7 @@ class ChatBotActivity : AppCompatActivity() {
                     showToast("Failed to add exercises")
                 }
             )
+            updateHealthData()
         }
     }
 
@@ -820,7 +813,7 @@ class ChatBotActivity : AppCompatActivity() {
         val editText = dialogLayout.findViewById<EditText>(R.id.editTextWeight)
 
         with(builder) {
-            setTitle("Edit Weight")
+            setTitle("Add Weight")
             setView(dialogLayout)
             setPositiveButton("Save") { _, _ ->
                 val weight = editText.text.toString().toFloat()
@@ -832,13 +825,14 @@ class ChatBotActivity : AppCompatActivity() {
                         0,
                         0,
                         weight,
-                        0.0f,
+                        null,
                         onSuccess = {
                             showToast("Weight Level Successully")
                         },
                         onFailure = {
                             showToast("Error in adding Weight")
                         })
+                    updateHealthData()
 
                 } else {
                     showToast("Weight cannot be empty")
@@ -856,29 +850,45 @@ class ChatBotActivity : AppCompatActivity() {
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.dialog_edit_glucose, null)
         val editText = dialogLayout.findViewById<EditText>(R.id.editTextGlucose)
+        editText.hint = "2.4"
 
         with(builder) {
-            setTitle("Edit Glucose Level")
+            setTitle("Add Glucose (HbA1c) Level (in %)")
             setView(dialogLayout)
             setPositiveButton("Save") { _, _ ->
-                val glucose = editText.text.toString().toFloat()
-                if (glucose != 0.0f) {
-                    sqLiteUtils.addOrUpdateHealthData(
-                        emptyList(),
-                        emptyList(),
-                        0,
-                        0,
-                        0,
-                        0.0f,
-                        glucose,
-                        onSuccess = {
-                            showToast("Glucose Level Added Successully")
+                val glucose = editText.text.toString().toFloatOrNull()
+                if (glucose != null && glucose != 0.0f) {
+                    sqLiteUtils.getUserData(
+                        onSuccess = { userData ->
+                            if (userData != null) {
+                                userData.HbA1c = glucose
+                                sqLiteUtils.addOrUpdateHealthData(
+                                    emptyList(),
+                                    emptyList(),
+                                    0,
+                                    0,
+                                    0,
+                                    null,
+                                    glucose,
+                                    onSuccess = {
+                                        showToast("Glucose Level Added Successfully")
+                                        makeApiCall(userData)
+                                    },
+                                    onFailure = {
+                                        showToast("Error adding glucose level")
+                                    }
+                                )
+                            } else {
+                                showToast("User data not found")
+                            }
                         },
                         onFailure = {
-                            showToast("Error adding glucose level")
-                        })
+                            showToast("Error retrieving user data")
+                        }
+                    )
+                    updateHealthData()
                 } else {
-                    showToast("Glucose level cannot be empty")
+                    showToast("Glucose level cannot be empty or zero")
                 }
             }
             setNegativeButton("Cancel") { dialog, _ ->
@@ -890,14 +900,83 @@ class ChatBotActivity : AppCompatActivity() {
 
 
     private suspend fun handleFallback(userInput: String) {
-        val response = generativeModel.generateContent(userInput)
-        addChatMessage(response.text.toString())
+
+        withContext(Dispatchers.IO) {
+            val healthDataDeferred = if (healthData == null) {
+                async {
+                    sqLiteUtils.getTodayHealthData(onSuccess = { data ->
+                        healthData = data
+                    }, onFailure = {})
+                }
+            } else null
+
+            val userDataDeferred = if (savedUserData == null) {
+                async {
+                    sqLiteUtils.getUserData(onSuccess = { data ->
+                        savedUserData = data
+                    }, onFailure = {})
+                }
+            } else null
+
+            val today7daysDataDeferred = if (last7daysData == null) {
+                async {
+                    sqLiteUtils.getLast7DaysData(onSuccess = { data ->
+                        last7daysData = data
+                    }, onFailure = {})
+                }
+            } else null
+
+            healthDataDeferred?.await()
+            userDataDeferred?.await()
+            today7daysDataDeferred?.await()
+        }
+
+
+        Log.d("trimeuserdata",
+            last7daysData!!.toString()
+        )
+        val modifiedUserInput = buildString {
+            append("Imagine yourself as an AI chatbot for Fit Yatra :A Health and Fitness app and provide accurate and well-formatted answers to user queries.\n" +
+                    "\n" +
+                    "User Question: ${userInput}\n" +
+                    "\n" +
+                    "Respond to the user's query in Human readable form and without any note. If the question pertains to health, incorporate relevant data. For general inquiries, respond appropriately without using specific data.\n")
+            if (healthData != null) {
+                append(" User Today's Health data: ${healthData.toString()}. \n")
+            }
+            if (savedUserData != null) {
+                append(" User data: ${savedUserData.toString()}.\n")
+            }
+            if (last7daysData != null) {
+                append(" User's Last ${last7daysData!!.size} days Health data in ascending order (i.e. latest date comes last) of date: ${last7daysData!!}.")
+            }
+        }
+
+        val response = withContext(Dispatchers.Default) {
+            generativeModel.generateContent(modifiedUserInput)
+        }
+        val modifiedResponseText = response.text.toString().replace("*", "")
+
+        withContext(Dispatchers.Main) {
+            addChatMessage(modifiedResponseText)
+            scrollToBottom()
+        }
     }
 
 
     private fun showToast(s: String) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
-
     }
+
+    override fun onDeleteClick(position: Int, type: String) {
+        if (type=="meal"){
+            mealList.removeAt(position)
+            mealAddAdapter.notifyItemRemoved(position)
+        }else{
+            exerciseList.removeAt(position)
+            exerciseAddAdapter.notifyItemRemoved(position)
+        }
+    }
+
 }
 

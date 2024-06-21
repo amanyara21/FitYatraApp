@@ -44,5 +44,9 @@
     "question": "Do you have any medical problems related to diabetes?",
     "type": "dropdown",
     "options": ["No problem", "Type 1 Diabetes", "Type 2 Diabetes", "Gestational Diabetes", "Diabetic Retinopathy", "Diabetic Neuropathy", "Diabetic Nephropathy", "Cardiovascular issues"]
+  },
+  {
+    "question": "Please enter your latest HbA1c level (in %)?",
+    "type": "number"
   }
 ]

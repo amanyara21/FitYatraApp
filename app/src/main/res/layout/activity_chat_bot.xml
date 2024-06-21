@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/horizontalScrollView"
-        android:layout_below="@+id/layout"
         android:padding="16dp">
 
         <LinearLayout
@@ -20,13 +19,6 @@
             android:orientation="vertical" />
 
     </ScrollView>
-
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/sign_in_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sign In with Google"
-        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/inputLayout"
@@ -48,6 +40,7 @@
             android:id="@+id/sendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
             android:text="Send" />
 
 

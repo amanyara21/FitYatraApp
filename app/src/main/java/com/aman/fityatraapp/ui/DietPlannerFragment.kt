@@ -89,7 +89,6 @@ class DietPlannerFragment : Fragment() {
                 populateViewPager()
             },
             onFailure = { exception ->
-                // Handle exception
                 Log.e("DietPlannerFragment", "Error fetching meals", exception)
             }
         )
@@ -165,31 +164,31 @@ class DietPlannerFragment : Fragment() {
                     findViewById<TextView>(R.id.textBreakfastFoodname).text =
                         breakfast?.foodName ?: "N/A"
                     findViewById<TextView>(R.id.textBreakfastFat).text =
-                        "Fat: ${breakfast?.totalLipidFat ?: "N/A"}"
+                        "Calories: ${breakfast?.energy ?: "N/A"} kcal"
                     findViewById<TextView>(R.id.textBreakfastProtein).text =
-                        "Protein: ${breakfast?.protein ?: "N/A"}"
+                        "Sugar: ${breakfast?.sugarsTotalIncludingNLEA ?: "N/A"} g"
                     findViewById<TextView>(R.id.textBreakfastCarbohydrates).text =
-                        "Carbohydrates: ${breakfast?.carbohydrateByDifference ?: "N/A"}"
+                        "Fat: ${breakfast?.totalLipidFat ?: "N/A"} g"
                 }
 
                 cardLunch.apply {
                     findViewById<TextView>(R.id.textLunchFoodname).text = lunch?.foodName ?: "N/A"
                     findViewById<TextView>(R.id.textLunchFat).text =
-                        "Fat: ${lunch?.totalLipidFat ?: "N/A"}"
+                        "Calories: ${lunch?.energy ?: "N/A"} Kcal"
                     findViewById<TextView>(R.id.textLunchProtein).text =
-                        "Protein: ${lunch?.protein ?: "N/A"}"
+                        "Sugar: ${lunch?.sugarsTotalIncludingNLEA ?: "N/A"} g"
                     findViewById<TextView>(R.id.textLunchCarbohydrates).text =
-                        "Carbohydrates: ${lunch?.carbohydrateByDifference ?: "N/A"}"
+                        "Fat: ${lunch?.totalLipidFat ?: "N/A"} g"
                 }
 
                 cardDinner.apply {
                     findViewById<TextView>(R.id.textDinnerFoodname).text = dinner?.foodName ?: "N/A"
                     findViewById<TextView>(R.id.textDinnerFat).text =
-                        "Fat: ${dinner?.totalLipidFat ?: "N/A"}"
+                        "Calories: ${dinner?.energy ?: "N/A"} kcal"
                     findViewById<TextView>(R.id.textDinnerProtein).text =
-                        "Protein: ${dinner?.protein ?: "N/A"}"
+                        "Sugar: ${dinner?.sugarsTotalIncludingNLEA ?: "N/A"} g"
                     findViewById<TextView>(R.id.textDinnerCarbohydrates).text =
-                        "Carbohydrates: ${dinner?.carbohydrateByDifference ?: "N/A"}"
+                        "Fat: ${dinner?.totalLipidFat ?: "N/A"} g"
                 }
             }
         }

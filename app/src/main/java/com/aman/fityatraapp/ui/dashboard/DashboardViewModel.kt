@@ -39,7 +39,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             goal = goal,
             onSuccess = {
                 _updateGoalSuccess.postValue(Unit)
-                // Reload goals after successful update
                 getGoals()
             },
             onFailure = { exception ->

@@ -12,6 +12,61 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/glucoseCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="openGlucoseActivity"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/glucoseTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Glucose Level"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/addGlucoseData"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/option_background"
+                        android:text="Add Data"
+                        android:textColor="@color/white" />
+                    />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
 
         <androidx.cardview.widget.CardView
             android:id="@+id/stepCountCard"
@@ -68,7 +123,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Update Goal" />
+                        android:text="Update Goal"
+                        android:textColor="@color/white" />
                     />
                 </LinearLayout>
             </LinearLayout>
@@ -130,7 +186,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Update Goal" />
+                        android:text="Update Goal"
+                        android:textColor="@color/white" />
                     />
 
                     <Button
@@ -140,7 +197,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Add Data" />
+                        android:text="Add Data"
+                        android:textColor="@color/white" />
                     />
                 </LinearLayout>
             </LinearLayout>
@@ -203,7 +261,8 @@
 
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Update Goal" />
+                        android:text="Update Goal"
+                        android:textColor="@color/white" />
                     />
 
                     <Button
@@ -214,7 +273,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Add Data" />
+                        android:text="Add Data"
+                        android:textColor="@color/white" />
                     />
                 </LinearLayout>
             </LinearLayout>
@@ -269,7 +329,8 @@
 
                         android:layout_marginTop="8dp"
                         android:background="@drawable/option_background"
-                        android:text="Add Data" />
+                        android:text="Add Data"
+                        android:textColor="@color/white" />
                     />
                 </LinearLayout>
             </LinearLayout>

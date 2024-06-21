@@ -12,10 +12,13 @@ import com.aman.fityatraapp.R
 import com.aman.fityatraapp.databinding.ActivityMainBinding
 import com.aman.fityatraapp.services.StepTrackingService
 import com.aman.fityatraapp.utils.ApiClient.apiService
+import com.aman.fityatraapp.utils.FirebaseUtils
 import com.aman.fityatraapp.utils.HealthConnectManager
 import com.aman.fityatraapp.utils.PermissionManager
 import com.aman.fityatraapp.utils.SQLiteUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 
@@ -30,14 +33,11 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionCallback {
 
         permissionManager = PermissionManager()
         permissionManager.initPermissionLauncher(this, this)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.hide()
         sqLiteUtils = SQLiteUtils(this)
         val isDataAvailable = sqLiteUtils.isUserDataAvailable()
-
-
 
         if (!isDataAvailable) {
             val intent = Intent(this, ChatBotActivity::class.java)
