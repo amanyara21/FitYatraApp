@@ -277,6 +277,8 @@ class ChatBotActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListene
 
             optionButton.background = ContextCompat.getDrawable(this, R.drawable.option_background)
 
+            optionButton.setTextColor(ContextCompat.getColor(this, R.color.white))
+
             val layoutParams = GridLayout.LayoutParams().apply {
                 width = 0
                 height = GridLayout.LayoutParams.WRAP_CONTENT
@@ -370,6 +372,8 @@ class ChatBotActivity : AppCompatActivity(), MealAddAdapter.OnDeleteClickListene
         sqLiteUtils.saveUserData(userData)
         sqLiteUtils.addOrUpdateHealthData(emptyList(), emptyList(), 0,0, 0, weight = weightInKg, glucoseLevel = HbA1c, onSuccess = {}, onFailure = {})
         updateHealthData()
+
+        navigateToMainActivity()
 
     }
 
