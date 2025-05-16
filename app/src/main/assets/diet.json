@@ -1,0 +1,247 @@
+{
+  "Day 1": {
+    "Breakfast": {
+      "carbs": 75.0,
+      "food_type": "Veg",
+      "calorie": 400,
+      "food": "Poha (flattened rice)",
+      "meal": "Breakfast",
+      "protein": 8.0,
+      "sugar": 2.0,
+      "fat": 15.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 120.0,
+      "food_type": "Veg",
+      "calorie": 800,
+      "food": "Chole Bhature",
+      "meal": "Lunch",
+      "protein": 25.0,
+      "sugar": 3.0,
+      "fat": 30.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 90.0,
+      "food_type": "Veg",
+      "calorie": 600,
+      "food": "Vegetable Biryani",
+      "meal": "Dinner",
+      "protein": 15.0,
+      "sugar": 1.0,
+      "fat": 20.0,
+      "quantity": 250
+    }
+  },
+  "Day 2": {
+    "Breakfast": {
+      "carbs": 70.0,
+      "food_type": "Veg",
+      "calorie": 350,
+      "food": "Upma (semolina)",
+      "meal": "Breakfast",
+      "protein": 10.0,
+      "sugar": 1.0,
+      "fat": 12.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 130.0,
+      "food_type": "Veg",
+      "calorie": 850,
+      "food": "Paneer Tikka with Naan",
+      "meal": "Lunch",
+      "protein": 40.0,
+      "sugar": 2.0,
+      "fat": 35.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 85.0,
+      "food_type": "Veg",
+      "calorie": 600,
+      "food": "Dal Makhani with Rice",
+      "meal": "Dinner",
+      "protein": 20.0,
+      "sugar": 1.0,
+      "fat": 18.0,
+      "quantity": 250
+    }
+  },
+  "Day 3": {
+    "Breakfast": {
+      "carbs": 60.0,
+      "food_type": "Veg",
+      "calorie": 300,
+      "food": "Idli with Sambar",
+      "meal": "Breakfast",
+      "protein": 10.0,
+      "sugar": 1.0,
+      "fat": 5.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 140.0,
+      "food_type": "Veg",
+      "calorie": 900,
+      "food": "Aloo Gobi with Roti",
+      "meal": "Lunch",
+      "protein": 25.0,
+      "sugar": 2.0,
+      "fat": 30.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 80.0,
+      "food_type": "Veg",
+      "calorie": 500,
+      "food": "Vegetable Curry with Quinoa",
+      "meal": "Dinner",
+      "protein": 15.0,
+      "sugar": 1.0,
+      "fat": 15.0,
+      "quantity": 250
+    }
+  },
+  "Day 4": {
+    "Breakfast": {
+      "carbs": 65.0,
+      "food_type": "Veg",
+      "calorie": 350,
+      "food": "Dosa with Coconut Chutney",
+      "meal": "Breakfast",
+      "protein": 8.0,
+      "sugar": 1.0,
+      "fat": 10.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 150.0,
+      "food_type": "Veg",
+      "calorie": 950,
+      "food": "Vegetable Pulao",
+      "meal": "Lunch",
+      "protein": 20.0,
+      "sugar": 3.0,
+      "fat": 25.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 85.0,
+      "food_type": "Veg",
+      "calorie": 500,
+      "food": "Rajma with Rice",
+      "meal": "Dinner",
+      "protein": 15.0,
+      "sugar": 1.0,
+      "fat": 10.0,
+      "quantity": 250
+    }
+  },
+  "Day 5": {
+    "Breakfast": {
+      "carbs": 70.0,
+      "food_type": "Veg",
+      "calorie": 400,
+      "food": "Puri with Aloo Sabzi",
+      "meal": "Breakfast",
+      "protein": 10.0,
+      "sugar": 2.0,
+      "fat": 20.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 130.0,
+      "food_type": "Veg",
+      "calorie": 800,
+      "food": "Baingan Bharta with Roti",
+      "meal": "Lunch",
+      "protein": 25.0,
+      "sugar": 2.0,
+      "fat": 30.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 90.0,
+      "food_type": "Veg",
+      "calorie": 600,
+      "food": "Mixed Vegetable Curry with Rice",
+      "meal": "Dinner",
+      "protein": 20.0,
+      "sugar": 1.0,
+      "fat": 15.0,
+      "quantity": 250
+    }
+  },
+  "Day 6": {
+    "Breakfast": {
+      "carbs": 75.0,
+      "food_type": "Veg",
+      "calorie": 400,
+      "food": "Chana Sundal",
+      "meal": "Breakfast",
+      "protein": 15.0,
+      "sugar": 1.0,
+      "fat": 10.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 140.0,
+      "food_type": "Veg",
+      "calorie": 900,
+      "food": "Vegetable Khichdi",
+      "meal": "Lunch",
+      "protein": 20.0,
+      "sugar": 2.0,
+      "fat": 25.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 85.0,
+      "food_type": "Veg",
+      "calorie": 500,
+      "food": "Palak Paneer with Roti",
+      "meal": "Dinner",
+      "protein": 15.0,
+      "sugar": 1.0,
+      "fat": 15.0,
+      "quantity": 250
+    }
+  },
+  "Day 7": {
+    "Breakfast": {
+      "carbs": 70.0,
+      "food_type": "Veg",
+      "calorie": 350,
+      "food": "Methi Thepla",
+      "meal": "Breakfast",
+      "protein": 10.0,
+      "sugar": 1.0,
+      "fat": 15.0,
+      "quantity": 200
+    },
+    "Lunch": {
+      "carbs": 150.0,
+      "food_type": "Veg",
+      "calorie": 950,
+      "food": "Dum Aloo with Rice",
+      "meal": "Lunch",
+      "protein": 25.0,
+      "sugar": 3.0,
+      "fat": 30.0,
+      "quantity": 300
+    },
+    "Dinner": {
+      "carbs": 85.0,
+      "food_type": "Veg",
+      "calorie": 500,
+      "food": "Vegetable Korma with Roti",
+      "meal": "Dinner",
+      "protein": 20.0,
+      "sugar": 1.0,
+      "fat": 15.0,
+      "quantity": 250
+    }
+  }
+}
