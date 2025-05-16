@@ -1,30 +1,33 @@
 [versions]
 agp = "8.3.2"
-cameraLifecycle = "1.3.4"
-cameraCamera2 = "1.3.4"
-cameraCore = "1.3.4"
+cameraLifecycle = "1.4.2"
+cameraCamera2 = "1.4.2"
+cameraCore = "1.4.2"
 compressor = "3.0.1"
-connectClient = "1.1.0-alpha07"
 connectClientVersion = "1.0.0-alpha11"
 converterGson = "2.9.0"
 coreSplashscreen = "1.0.1"
 circleimageview = "3.1.0"
 firebaseBomVersion = "33.1.0"
-generativeai = "0.8.0"
+generativeai = "0.9.0"
 gson = "2.11.0"
-kotlin = "1.9.0"
+hiltAndroidCompiler = "2.51.1"
+hiltAndroidGradlePlugin = "2.51.1"
+hiltCompiler = "1.2.0"
+hiltLifecycleViewmodelVersion = "1.0.0-alpha03"
+kotlin = "1.9.20"
 coreKtx = "1.13.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
-constraintlayout = "2.1.4"
-lifecycleLivedataKtx = "2.8.2"
-lifecycleViewmodelKtx = "2.8.2"
-navigationFragmentKtx = "2.7.7"
-navigationUiKtx = "2.7.7"
-activity = "1.9.0"
+constraintlayout = "2.2.1"
+lifecycleLivedataKtx = "2.9.0"
+lifecycleViewmodelKtx = "2.9.0"
+navigationFragmentKtx = "2.9.0"
+navigationUiKtx = "2.9.0"
+activity = "1.10.1"
 picassoVersion = "2.71828"
 okhttpVersion = "4.11.0"
 playServicesAuth = "21.2.0"
@@ -34,17 +37,22 @@ firebaseDatabaseKtx = "21.0.0"
 retrofit = "2.9.0"
 poseDetectionCommon = "17.0.0"
 poseDetection = "17.0.0"
-recyclerview = "1.3.2"
-volley = "1.2.1"
+recyclerview = "1.4.0"
+roomRuntime = "2.6.1"
 
 [libraries]
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraLifecycle" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraLifecycle" }
-androidx-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "connectClient" }
 androidx-connect-client-v100alpha04 = { module = "androidx.health.connect:connect-client", version.ref = "connectClientVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "hiltCompiler" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
+androidx-hilt-lifecycle-viewmodel = { module = "androidx.hilt:hilt-lifecycle-viewmodel", version.ref = "hiltLifecycleViewmodelVersion" }
+androidx-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "hiltCompiler" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltCompiler" }
 compressor = { module = "id.zelory:compressor", version.ref = "compressor" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -52,6 +60,9 @@ circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circ
 generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidGradlePlugin" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroidGradlePlugin" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroidCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -73,7 +84,9 @@ squareup-picasso = { module = "com.squareup.picasso:picasso", version.ref = "pic
 pose-detection-common = { group = "com.google.mlkit", name = "pose-detection-common", version.ref = "poseDetectionCommon" }
 pose-detection = { group = "com.google.mlkit", name = "pose-detection", version.ref = "poseDetection" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
-volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

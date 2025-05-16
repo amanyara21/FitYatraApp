@@ -2,7 +2,7 @@ package com.aman.fityatraapp.utils
 
 
 import android.graphics.Color
-import com.aman.fityatraapp.models.HealthData
+import com.aman.fityatraapp.data.local.model.HealthData
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet

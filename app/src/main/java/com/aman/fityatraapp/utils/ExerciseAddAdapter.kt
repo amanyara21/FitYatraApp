@@ -8,10 +8,10 @@ import android.widget.ImageView
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
 import com.aman.fityatraapp.R
-import com.aman.fityatraapp.models.ExerciseAdd
+import com.aman.fityatraapp.data.api.ExerciseAdd
 
 class ExerciseAddAdapter(
-    private val exerciseList: List<ExerciseAdd>,
+    private var exerciseList: List<ExerciseAdd>,
     private val onDeleteClickListener: OnDeleteClickListener
 ) : RecyclerView.Adapter<ExerciseAddAdapter.ViewHolder>() {
 
@@ -42,6 +42,12 @@ class ExerciseAddAdapter(
     override fun getItemCount(): Int {
         return exerciseList.size
     }
+
+    fun updateData(newList: List<ExerciseAdd>) {
+        exerciseList = newList.toMutableList()
+        notifyDataSetChanged()
+    }
+
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val editExerciseName: EditText = itemView.findViewById(R.id.edit_exercise_name)

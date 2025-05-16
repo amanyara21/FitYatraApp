@@ -11,7 +11,7 @@ import com.aman.fityatraapp.R
 import com.aman.fityatraapp.models.MealAdd
 
 class MealAddAdapter(
-    private val mealList: List<MealAdd>,
+    private var mealList: List<MealAdd>,
     private val onDeleteClickListener: OnDeleteClickListener
 ) : RecyclerView.Adapter<MealAddAdapter.ViewHolder>() {
 
@@ -43,6 +43,12 @@ class MealAddAdapter(
     override fun getItemCount(): Int {
         return mealList.size
     }
+
+    fun updateData(newList: List<MealAdd>) {
+        mealList = newList.toMutableList()
+        notifyDataSetChanged()
+    }
+
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val editDishName: EditText = itemView.findViewById(R.id.edit_dish_name)

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardBreakfast"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:padding="16dp"
+    app:cardCornerRadius="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textBreakfastTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:text="Breakfast"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textBreakfastFoodname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Foodname"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textBreakfastFat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fat: "
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textBreakfastProtein"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Protein: "
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textBreakfastCarbohydrates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Carbohydrates: "
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

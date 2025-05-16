@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.aman.fityatraapp.activities.ActivitiesDescriptionActivity
+import com.aman.fityatraapp.ui.ActivitiesDescriptionActivity
 import com.aman.fityatraapp.R
 import com.aman.fityatraapp.models.Activities
 import com.squareup.picasso.Picasso

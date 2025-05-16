@@ -3,11 +3,16 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
 
     id 'com.google.gms.google-services'
+    id 'dagger.hilt.android.plugin'
+    id 'kotlin-kapt'
+    id("com.google.devtools.ksp")
+
+
 }
 
 android {
     namespace 'com.aman.fityatraapp'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.aman.fityatraapp"
@@ -41,7 +46,10 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig(true)
+        dataBinding true
     }
+
+
 
 }
 
@@ -86,5 +94,21 @@ dependencies {
     implementation libs.androidx.camera.lifecycle
     implementation libs.androidx.camera.view
     implementation libs.compressor
+
+
+    implementation libs.hilt.android
+    ksp libs.androidx.hilt.compiler
+    ksp(libs.hilt.compiler)
+    implementation libs.androidx.room.runtime
+    ksp libs.androidx.room.compiler
+    implementation libs.androidx.room.ktx
+//    implementation libs.androidx.hilt.lifecycle.viewmodel
+
+    implementation libs.androidx.activity.ktx
+
+//    implementation libs.androidx.hilt.work
+    implementation libs.androidx.hilt.common
+    implementation libs.androidx.hilt.navigation.fragment
+
 
 }

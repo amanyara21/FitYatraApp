@@ -33,7 +33,6 @@ class HealthConnectManager(private val context: Context) {
         }
     }
 
-    private val sqliteUtils = SQLiteUtils(context)
 
     val permissions = setOf(
         HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
@@ -126,21 +125,21 @@ class HealthConnectManager(private val context: Context) {
         glucoseLevel: Float?,
         caloriesBurned: Int?
     ) {
-        sqliteUtils.addOrUpdateHealthData(
-            exercises = null,
-            meals = null,
-            stepCount = stepCount,
-            calorieIntake = null,
-            calorieBurn = caloriesBurned,
-            weight = weight,
-            glucoseLevel = glucoseLevel,
-            onSuccess = {
-                Log.d("Firebase", "Health data successfully written!")
-            },
-            onFailure = { e ->
-                Log.w("Firebase", "Error writing health data", e)
-            }
-        )
+//        sqliteUtils.addOrUpdateHealthData(
+//            exercises = null,
+//            meals = null,
+//            stepCount = stepCount,
+//            calorieIntake = null,
+//            calorieBurn = caloriesBurned,
+//            weight = weight,
+//            glucoseLevel = glucoseLevel,
+//            onSuccess = {
+//                Log.d("Firebase", "Health data successfully written!")
+//            },
+//            onFailure = { e ->
+//                Log.w("Firebase", "Error writing health data", e)
+//            }
+//        )
     }
 }
 

@@ -10,74 +10,53 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.aman.fityatraapp.activities.MainActivity
+import androidx.room.Room
+import com.aman.fityatraapp.ui.MainActivity
 import com.aman.fityatraapp.R
-import com.aman.fityatraapp.utils.SQLiteUtils
+import com.aman.fityatraapp.data.local.AppDatabase
+import com.aman.fityatraapp.data.local.model.HealthData
+import com.aman.fityatraapp.repository.HealthRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 
 class StepTrackingService : Service(), SensorEventListener {
+
     private lateinit var sensorManager: SensorManager
+    private lateinit var appDatabase: AppDatabase
+    private lateinit var healthRepository: HealthRepository
+
     private var stepCount = 0
     private var lowAccuracyStepCount = 0
     private var highAccuracyStepCount = 0
     private var mediumAccuracyStepCount = 0
     private var otherStepCount = 0
     private val STEP_UPDATE_THRESHOLD = 50
-    private var sqlUtils = SQLiteUtils(this)
-
-    override fun onBind(intent: Intent): IBinder? {
-        return null
-    }
-
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        startForeground()
-        return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun startForeground() {
-
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0,
-            notificationIntent, PendingIntent.FLAG_IMMUTABLE
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                NOTIF_CHANNEL_ID,
-                "Step_Tracking_Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
-
-
-        val notification = NotificationCompat.Builder(
-            this,
-            NOTIF_CHANNEL_ID
-        )
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.outline_notifications_24)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText("Service is running in the background")
-            .setContentIntent(pendingIntent)
-            .setSound(null)
-            .build()
-
-        startForeground(NOTIF_ID, notification)
-    }
-
 
     override fun onCreate() {
         super.onCreate()
+        appDatabase = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "fityatra_db"
+        ).build()
+
+        healthRepository = HealthRepository(appDatabase.healthDao())
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         setupStepDetector()
+    }
 
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForegroundService()
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -87,14 +66,16 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun setupStepDetector() {
         val stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-        sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_NORMAL)
+        stepDetector?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        Log.d("Event is ", event?.sensor?.type.toString())
         if (event?.sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
             stepCount++
             Log.d("Steps", stepCount.toString())
+
             if (stepCount % STEP_UPDATE_THRESHOLD == 0) {
                 updateStepCount()
             }
@@ -102,52 +83,85 @@ class StepTrackingService : Service(), SensorEventListener {
     }
 
     private fun updateStepCount() {
-        makeApiCallForStepCount()
-    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val today = getTodayStartMillis()
+                val existingData = healthRepository.getHealthDataByDate(today)
 
-    private fun makeApiCallForStepCount() {
-        sqlUtils.addOrUpdateHealthData(null, null, stepCount, 0, 0, null, null, onSuccess = {
-            stepCount = 0
-            lowAccuracyStepCount = 0
-            highAccuracyStepCount = 0
-            mediumAccuracyStepCount = 0
-            otherStepCount = 0
-        }, onFailure = {})
-    }
+                val updatedData = existingData?.copy(
+                    stepCount = existingData.stepCount + stepCount
+                ) ?: HealthData(
+                    date = today,
+                    stepCount = stepCount
+                )
 
+                healthRepository.insertOrUpdate(updatedData)
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d("Sensor Type is : ", sensor?.type.toString())
-        when (sensor?.type) {
-            Sensor.TYPE_STEP_DETECTOR -> {
-                when (accuracy) {
-                    SensorManager.SENSOR_STATUS_UNRELIABLE -> {
-                        Log.d("Sensor Accuracy", "Step detector sensor accuracy is unreliable.")
-                        otherStepCount++
-                    }
+                // Reset counters
+                stepCount = 0
+                lowAccuracyStepCount = 0
+                highAccuracyStepCount = 0
+                mediumAccuracyStepCount = 0
+                otherStepCount = 0
 
-                    SensorManager.SENSOR_STATUS_ACCURACY_LOW -> {
-                        Log.d("Sensor Accuracy", "Step detector sensor accuracy is low.")
-                        lowAccuracyStepCount++
-                    }
-
-                    SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> {
-                        Log.d("Sensor Accuracy", "Step detector sensor accuracy is medium.")
-                        mediumAccuracyStepCount++
-                    }
-
-                    SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> {
-                        Log.d("Sensor Accuracy", "Step detector sensor accuracy is high.")
-                        highAccuracyStepCount++
-                    }
-                }
+            } catch (e: Exception) {
+                Log.e("StepService", "Failed to update DB", e)
             }
         }
     }
 
-    companion object {
-        private const val NOTIF_ID = 1
-        private const val NOTIF_CHANNEL_ID = "Step_Tracking_Channel"
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        if (sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
+            when (accuracy) {
+                SensorManager.SENSOR_STATUS_UNRELIABLE -> otherStepCount++
+                SensorManager.SENSOR_STATUS_ACCURACY_LOW -> lowAccuracyStepCount++
+                SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> mediumAccuracyStepCount++
+                SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> highAccuracyStepCount++
+            }
+        }
     }
 
+    private fun startForegroundService() {
+        val channelId = NOTIF_CHANNEL_ID
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val channel = NotificationChannel(
+            channelId,
+            "Step Tracking Channel",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.outline_notifications_24)
+            .setContentTitle("FitYatra")
+            .setContentText("Step tracking is running")
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+
+        startForeground(NOTIF_ID, notification)
+    }
+
+    private fun getTodayStartMillis(): Long {
+        val now = Calendar.getInstance()
+        now.set(Calendar.HOUR_OF_DAY, 0)
+        now.set(Calendar.MINUTE, 0)
+        now.set(Calendar.SECOND, 0)
+        now.set(Calendar.MILLISECOND, 0)
+        return now.timeInMillis
+    }
+
+    companion object {
+        private const val NOTIF_ID = 101
+        private const val NOTIF_CHANNEL_ID = "Step_Tracking_Channel"
+    }
 }
+

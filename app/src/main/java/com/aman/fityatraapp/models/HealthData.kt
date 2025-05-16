@@ -1,5 +1,6 @@
 package com.aman.fityatraapp.models
 
+import com.aman.fityatraapp.data.api.ExerciseAdd
 import java.util.Date
 
 data class HealthData(
